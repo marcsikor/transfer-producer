@@ -14,6 +14,9 @@ def dialog_bar(string,entries):
 
     entries.append(e)
 
+def temp_files_collector():
+    os.system("rm -rf newtransfer.aux newtransfer.log newtransfer.tex")
+
 def transfer(tab):
 
     with open('transfer.tex') as g:
@@ -23,10 +26,11 @@ def transfer(tab):
         a = a.replace('placeholder'+str(i), tab[i].get())
 
     with open('newtransfer.tex', 'w') as f:
-        print("coś sie dzieje")
         f.write(a)
 
     os.system("pdflatex newtransfer.tex")
+
+    temp_files_collector()
 
 
 root = tk.Tk()
