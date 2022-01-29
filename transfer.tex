@@ -1,0 +1,72 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{multirow}
+\usepackage{rotating}
+\usepackage{tabularx}
+\usepackage{etoolbox}
+\AtBeginEnvironment{tabularx}{\large}
+\usepackage[a4paper,top=1cm,bottom=1cm,left=2cm,right=2cm,marginparwidth=1cm]{geometry}
+\renewcommand{\arraystretch}{1.2}
+\setlength{\tabcolsep}{0pt}
+\usepackage[T1]{fontenc}
+
+\begin{document}
+\thispagestyle{empty}
+\begin{table}[t]
+{\setlength{\tabcolsep}{0.5em}
+\begin{tabularx}{\textwidth}{|Xccll|c|}
+\hline
+\multicolumn{5}{|l|}{Nazwa odbiorcy}                                                                                    & \multirow{22}{*}{ \begin{sideways}Odcinek dla banku zleceniodawcy\end{sideways}} \\
+\multicolumn{5}{|l|}{\textbf{placeholder0}}                                                                                                  &                                             \\
+\multicolumn{5}{|l|}{Nazwa odbiorcy cd.}                                                                                &                                             \\
+\multicolumn{5}{|l|}{\textbf{placeholder1}}                                                                                                  &                                             \\ \cline{1-5}
+\multicolumn{5}{|l|}{Nr rachunku odbiorcy}                                                                              &                                             \\
+\multicolumn{5}{|l|}{\textbf{placeholder2}}                                                                                                  &                                             \\ \cline{2-3} \cline{5-5}
+ & \multicolumn{1}{|l|}{W}      & \multicolumn{1}{l|}{P}      & \multicolumn{1}{X|}{\centering \textbf{PLN}}      & Kwota                    &                                             \\ \cline{2-3}
+&                             &                             & \multicolumn{1}{l|}{}                  &  \textbf{placeholder3}                &                                             \\ \cline{1-5}
+\multicolumn{5}{|l|}{Nr rachunku zleceniodawcy}                                                                         &                                             \\
+\multicolumn{5}{|l|}{\textbf{placeholder4}}                                                                                                  &                                             \\
+\multicolumn{5}{|l|}{Nazwa zleceniodawcy}                                                                               &                                             \\
+\multicolumn{5}{|l|}{\textbf{placeholder5}}                                                       &                                             \\
+\multicolumn{5}{|l|}{Nazwa zleceniodawcy cd.}                                                                           &                                             \\
+\multicolumn{5}{|l|}{\textbf{placeholder6}}                                                             &                                             \\
+\multicolumn{5}{|l|}{Tytułem}                                                                                           &                                             \\
+\multicolumn{5}{|l|}{\textbf{placeholder7}}                                                                                               &                                             \\ \cline{1-5}
+\multicolumn{3}{|l|}{Pieczęć, data i podpis zleceniodawcy} & \multicolumn{1}{l|}{Pieczęć}           & Opłata  \hspace{20px}          &                                             \\ \cline{1-5}
+\multicolumn{3}{|l|}{\multirow{3}{*}{}}                    & \multicolumn{1}{l|}{\multirow{3}{*}{}} & \multirow{3}{*}{} &                                             \\
+\multicolumn{3}{|l|}{}                                     & \multicolumn{1}{l|}{}                  &                   &                                             \\
+\multicolumn{3}{|l|}{}                                     & \multicolumn{1}{l|}{}                               &                   &                                             \\ \hline
+\end{tabularx}
+}
+\end{table}
+
+\begin{table}[h]
+{\setlength{\tabcolsep}{0.5em}
+\begin{tabularx}{\textwidth}{|Xccll|c|}
+\hline
+\multicolumn{5}{|l|}{Nazwa odbiorcy}                                                                                    & \multirow{22}{*}{ \begin{sideways}Odcinek dla banku zleceniodawcy\end{sideways}} \\
+\multicolumn{5}{|l|}{\textbf{placeholder0}}                                                                                                  &                                             \\
+\multicolumn{5}{|l|}{Nazwa odbiorcy cd.}                                                                                &                                             \\
+\multicolumn{5}{|l|}{\textbf{placeholder1}}                                                                                                  &                                             \\ \cline{1-5}
+\multicolumn{5}{|l|}{Nr rachunku odbiorcy}                                                                              &                                             \\
+\multicolumn{5}{|l|}{\textbf{placeholder2}}                                                                                                  &                                             \\ \cline{2-3} \cline{5-5}
+ & \multicolumn{1}{|l|}{W}      & \multicolumn{1}{l|}{P}      & \multicolumn{1}{X|}{\centering \textbf{PLN}}      & Kwota                    &                                             \\ \cline{2-3}
+&                             &                             & \multicolumn{1}{l|}{}                  &  \textbf{placeholder3}                &                                             \\ \cline{1-5}
+\multicolumn{5}{|l|}{Nr rachunku zleceniodawcy}                                                                         &                                             \\
+\multicolumn{5}{|l|}{\textbf{placeholder4}}                                                                                                  &                                             \\
+\multicolumn{5}{|l|}{Nazwa zleceniodawcy}                                                                               &                                             \\
+\multicolumn{5}{|l|}{\textbf{placeholder5}}                                                       &                                             \\
+\multicolumn{5}{|l|}{Nazwa zleceniodawcy cd.}                                                                           &                                             \\
+\multicolumn{5}{|l|}{\textbf{placeholder6}}                                                             &                                             \\
+\multicolumn{5}{|l|}{Tytułem}                                                                                           &                                             \\
+\multicolumn{5}{|l|}{\textbf{placeholder7}}                                                                                               &                                             \\ \cline{1-5}
+\multicolumn{3}{|l|}{Pieczęć, data i podpis zleceniodawcy} & \multicolumn{1}{l|}{Pieczęć}           & Opłata  \hspace{20px}          &                                             \\ \cline{1-5}
+\multicolumn{3}{|l|}{\multirow{3}{*}{}}                    & \multicolumn{1}{l|}{\multirow{3}{*}{}} & \multirow{3}{*}{} &                                             \\
+\multicolumn{3}{|l|}{}                                     & \multicolumn{1}{l|}{}                  &                   &                                             \\
+\multicolumn{3}{|l|}{}                                     & \multicolumn{1}{l|}{}                               &                   &                                             \\ \hline
+\end{tabularx}
+}
+\end{table}
+
+
+\end{document}
