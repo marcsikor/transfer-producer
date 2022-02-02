@@ -5,9 +5,9 @@ import os
 
 def dialog_bar(string,entries): # function for creating editable fields
     
-    tk.Label(root, font=40, text=string, bg='#343434', fg = '#ffffff').pack()
+    tk.Label(root, font=40, text=string, bg='#d198b7', fg='#000000').pack()
     
-    e = tk.Entry(root, bg = "#E1BFFF")
+    e = tk.Entry(root, bg="#E1BFFF", highlightcolor='#000000')
 
     e.pack(ipadx = 100)
 
@@ -39,9 +39,9 @@ def transfer(tab):
 root = tk.Tk()
 root.title("Przelewy 0.9.1")
 
-root.configure(bg='#343434')
+root.configure(bg='#d198b7')
 
-tk.Label(root, font=50, text="Program do autouzupełniania druku do przelewu\n", bg="#343434", fg='#ffffff').pack()
+tk.Label(root, font=50, text="Program do autouzupełniania druku do przelewu\n", bg="#d198b7", fg='#000000').pack()
 
 titles = ["Nazwa odbiorcy","Nazwa odbiorcy cd.","Nr rachunku odbiorcy","Kwota","Nr rachunku zleceniodawcy","Nazwa zleceniodawcy","Nazwa zleceniodawcy cd.","Tytuł"] # table of polish field names
 
