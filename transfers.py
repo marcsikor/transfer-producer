@@ -1,55 +1,103 @@
 import tkinter as tk
-# from tkinter import ttk
 import os
 
+class App:
+    def __init__(self, root):
+        self.root = root
+        self.titles = ["Receiver name", "Receiver name cont.", "Receiver account number", "Value","Sender account number", "Sender name", "Sender name cont.", "Title"]
+        self.entries = []
+        self.labels = []
+        self.language_tracker = 0
 
-def dialog_bar(string,entries): # function for creating editable fields
+        self.root.title("Transfer order creator 1.0")
+        self.root.configure(bg='#d198b7')
+
+        self.start()
     
-    tk.Label(root, font=40, text=string, bg='#d198b7', fg='#000000').pack()
+    def start(self):
+        self.title_label = tk.Label(self.root, font=('Ubuntu',18,'bold'), text="Transfer order creator\n", bg="#d198b7", fg='#000000')
+        self.title_label.pack()
+
+        for i in self.titles:
+            l = tk.Label(root, font=('Ubuntu Regular',16), text=i, bg='#d198b7', fg='#000000')
+            l.pack()
+            self.labels.append(l)
+            e = tk.Entry(root, bg="#E1BFFF", bd=2, highlightcolor='#779ecb', relief='flat')
+            e.pack(ipadx = 100)
+            self.entries.append(e)
+
+        self.run_button = tk.Button(
+        self.root, 
+        text="Run", 
+        font=('Ubuntu Regular',16), 
+        width=10, 
+        command=lambda: self.transfer(), 
+        bg = '#86C5DA',
+        highlightcolor="#779ecb", 
+        activebackground="#779ecb",
+        activeforeground="white", 
+        relief='flat'
+        )
+        self.run_button.pack(pady = 10) # run button
+
+        self.language_button = tk.Button(
+        self.root, 
+        text='Zmień język na polski', 
+        font=('Ubuntu Regular',16),
+        width=20, 
+        command=lambda: self.change_language(), 
+        bg = '#86C5DA',
+        highlightcolor="#779ecb", 
+        activebackground="#779ecb",
+        activeforeground="white", 
+        relief='flat'
+        )
+        self.language_button.pack(pady = 10) # language button
+
+    def transfer(self):
+
+        with open('transfer.tex') as g: # opening template tex file
+            a = g.read()
+
+        for i in range(8):
+            a = a.replace('placeholder'+str(i), self.entries[i].get()) # creating new tex code while editing the template on "placeholder*" flag
+
+        with open('newtransfer.tex', 'w') as f: # creating new tex file
+            f.write(a)
+
+        os.system("pdflatex newtransfer.tex") # compiling tex file to pdf
+
+        os.system("evince newtransfer.pdf")  # to display the document in GNOME document viewer (should be altered on windows or other)
+
+        self.temp_files_collector() # removing pdflatex's log and aux files
+
+    def temp_files_collector(self):
     
-    e = tk.Entry(root, bg="#E1BFFF", highlightcolor='#000000')
+        os.system("rm -rf newtransfer.aux newtransfer.log newtransfer.tex") # collecting pdflatex's temporary files (tex, log, aux) - optional functionality
 
-    e.pack(ipadx = 100)
+    def change_language(self):
+        if self.language_tracker % 2 == 0:
+            self.titles = ["Nazwa odbiorcy","Nazwa odbiorcy cd.","Nr rachunku odbiorcy","Kwota","Nr rachunku zleceniodawcy","Nazwa zleceniodawcy","Nazwa zleceniodawcy cd.","Tytuł"]
+            self.root.title("Kreator poleceń przelewu 1.0")
+            self.title_label.configure(text = "Kreator polecenia przelewu\n")
+            self.language_button.configure(text = "Change language to english")
+            self.run_button.config(text='Wykonaj')
 
-    entries.append(e)
+        else:
+            self.titles = ["Receiver name", "Receiver name cont.", "Receiver account number", "Value","Sender account number", "Sender name", "Sender name cont.", "Title"]
+            self.root.title("Transfer order creator 1.0")
+            self.title_label.configure(text = "Transfer order creator\n")
+            self.language_button.configure(text = "Zmień język na polski")
+            self.run_button.config(text='Run')
 
-def temp_files_collector():
-    os.system("rm -rf newtransfer.aux newtransfer.log newtransfer.tex") # collecting pdflatex's temporary files (tex, log, aux) - optional functionality
-
-def transfer(tab): 
-
-    with open('transfer.tex') as g: # opening template tex file
-        a = g.read()
-
-    for i in range(8):
-        a = a.replace('placeholder'+str(i), tab[i].get()) # creating new tex code while editing the template on "placeholder*" flags
-
-    with open('newtransfer.tex', 'w') as f: # creating new tex file
-        f.write(a)
-
-    os.system("pdflatex newtransfer.tex") # compiling tex file to pdf
-
-    os.system("evince newtransfer.pdf")  # to display the document in GNOME document viewer (should be altered on windows)
-
-    temp_files_collector() # removing pdflatex's log and aux files
-
-
-# main program
+        a = 0
+        for i in self.labels:
+            i.configure(text=self.titles[a])
+            a += 1
+        
+        self.language_tracker += 1
 
 root = tk.Tk()
-root.title("Przelewy 0.9.1")
-
-root.configure(bg='#d198b7')
-
-tk.Label(root, font=50, text="Program do autouzupełniania druku do przelewu\n", bg="#d198b7", fg='#000000').pack()
-
-titles = ["Nazwa odbiorcy","Nazwa odbiorcy cd.","Nr rachunku odbiorcy","Kwota","Nr rachunku zleceniodawcy","Nazwa zleceniodawcy","Nazwa zleceniodawcy cd.","Tytuł"] # table of polish field names
-
-entries = [] # table for storing tkinter objects
-
-for i in titles:
-    dialog_bar(i,entries) # loop for creating fields
-
-tk.Button(root, text="Wykonaj", font=40, width=10, command=lambda: transfer(entries), bg = '#FFE8B3' ).pack(pady = 10) # run button
-
+app = App(root)
+# app.start()
 root.mainloop()
