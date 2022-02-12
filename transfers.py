@@ -5,6 +5,7 @@ class App:
     def __init__(self, root):
         self.root = root
         self.titles = ["Receiver name", "Receiver name cont.", "Receiver account number", "Value","Sender account number", "Sender name", "Sender name cont.", "Title"]
+        self.additional_titles = ["Stamp, date and signature of the sender", "Stamp", "Fee", "Voucher for the sender's bank", "Voucher for the sender"]
         self.entries = [] # list for storing entry objects
         self.labels = [] # list for storing label objects (for translation)
         self.language_tracker = True # language flag
@@ -13,7 +14,7 @@ class App:
         self.root.configure(bg='#d198b7')
 
         self.start()
-    
+
     def start(self):
         self.title_label = tk.Label(self.root, font=('Ubuntu',18,'bold'), text="Transfer order creator\n", bg="#d198b7", fg='#000000') #top label
         self.title_label.pack() # .pack() method used for displaying UI elements
@@ -61,7 +62,10 @@ class App:
 
         for i in range(8):
             a = a.replace('placeholder'+str(i), self.entries[i].get()) # creating new tex code while editing the template on "placeholder*" flag
-
+            a = a.replace('new*placeh'+str(i), self.titles[i]) # renaming the boxes names with "new*placeh" flag
+        
+        for i in range(5):
+            a = a.replace('additional*plch'+str(i), self.additional_titles[i]) # changing the constant boxes names
         with open('newtransfer.tex', 'w') as f: # creating new tex file
             f.write(a)
 
@@ -79,6 +83,7 @@ class App:
 
         if self.language_tracker:
             self.titles = ["Nazwa odbiorcy","Nazwa odbiorcy cd.","Nr rachunku odbiorcy","Kwota","Nr rachunku zleceniodawcy","Nazwa zleceniodawcy","Nazwa zleceniodawcy cd.","Tytuł"]
+            self.additional_titles = ["Pieczęć, data i podpis zleceniodawcy", "Pieczęć", "Opłata", "Odcinek dla banku zleceniodawcy", "Odcinek dla zleceniodawcy"]
             self.root.title("Kreator poleceń przelewu 1.0")
             self.title_label.configure(text = "Kreator polecenia przelewu\n")
             self.language_button.configure(text = "Change language to english")
@@ -87,6 +92,7 @@ class App:
 
         else:
             self.titles = ["Receiver name", "Receiver name cont.", "Receiver account number", "Value","Sender account number", "Sender name", "Sender name cont.", "Title"]
+            self.additional_titles = ["Stamp, date and signature of the sender", "Stamp", "Fee", "Voucher for the sender's bank", "Voucher for the sender"]
             self.root.title("Transfer order creator 1.0")
             self.title_label.configure(text = "Transfer order creator\n")
             self.language_button.configure(text = "Zmień język na polski")
