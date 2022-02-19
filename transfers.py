@@ -1,18 +1,30 @@
 import tkinter as tk
 from tkinter import ttk
+from sys import platform 
 import os
 
 class App:
-    def __init__(self, root):
+    def __init__(self, root, sysinfo):
         self.root = root
         self.titles = ["Receiver name", "Receiver name cont.", "Receiver account number", "Value","Sender account number", "Sender name", "Sender name cont.", "Title"]
         self.additional_titles = ["Stamp, date and signature of the sender", "Stamp", "Fee", "Voucher for the sender's bank", "Voucher for the sender", "D", "T"]
         self.entries = [] # list for storing entry objects
         self.labels = [] # list for storing label objects (for translation)
         self.language_tracker = True # language flag
-
         self.root.title("Transfer order creator 1.0") # window title
         self.root.configure(bg='#d198b7')
+
+        if sysinfo == 'linux':
+            self.sysinfo = True
+        else:
+            self.sysinfo = False
+
+        print(self.sysinfo)
+
+        if self.sysinfo:
+            self.font = 'Ubuntu'
+        else:
+            self.font = 'Arial'
 
         self.start()
 
@@ -22,7 +34,7 @@ class App:
         # scroll = tk.Scrollbar(self.root, orient = 'vertical')
         # scroll.pack(side = 'right', fill = 'y')
 
-        self.title_label = tk.Label(self.root, font=('Ubuntu',18,'bold'), text="Transfer order creator\n", bg="#d198b7", fg='#000000') #top label
+        self.title_label = tk.Label(self.root, font=(self.font,18,'bold'), text="Transfer order creator\n", bg="#d198b7", fg='#000000') #top label
         self.title_label.pack() # .pack() method used for displaying UI elements
 
         # migration to ttk for entries in the future?
@@ -32,7 +44,7 @@ class App:
         # )
 
         for i in self.titles: # setting up the labels and entry bars 
-            l = tk.Label(root, font=('Ubuntu Regular',16), text=i, bg='#d198b7', fg='#000000')
+            l = tk.Label(root, font=(self.font,16), text=i, bg='#d198b7', fg='#000000')
             l.pack()
             self.labels.append(l)
             e = tk.Entry(root, bg="#E1BFFF", bd=2, highlightcolor='#779ecb', selectbackground = '#779ecb', selectforeground = "white", relief='flat')
@@ -44,7 +56,7 @@ class App:
         self.run_button = tk.Button(
         self.root, 
         text="Run", 
-        font=('Ubuntu Regular',16), 
+        font=(self.font,16), 
         width=10, 
         command=lambda: self.transfer(), 
         bg = '#86C5DA',
@@ -58,7 +70,7 @@ class App:
         self.language_button = tk.Button(
         self.root, 
         text='Zmień język na polski', 
-        font=('Ubuntu Regular',16),
+        font=(self.font,16),
         width=20, 
         command=lambda: self.change_language(), 
         bg = '#86C5DA',
@@ -74,7 +86,7 @@ class App:
 
         # making a label for a dropdown
 
-        l = tk.Label(root, font=('Ubuntu Regular',16), text="Currency", bg='#d198b7', fg='#000000')
+        l = tk.Label(root, font=(self.font,16), text="Currency", bg='#d198b7', fg='#000000')
         l.pack()
         self.labels.append(l)
 
@@ -116,15 +128,22 @@ class App:
         with open('newtransfer.tex', 'w') as f: # creating new tex file
             f.write(a)
 
+
         os.system("pdflatex newtransfer.tex") # compiling tex file to pdf
 
-        os.system("evince newtransfer.pdf")  # to display the document in GNOME document viewer (should be altered on windows or other)
+        if self.sysinfo:
+            os.system("evince newtransfer.pdf")  # to display the document in GNOME document viewer (should be altered on windows or other)
+        else:
+            os.system("newtransfer.pdf") # same for windows
 
         self.temp_files_collector() # removing pdflatex's log and aux files
 
     def temp_files_collector(self): # collecting pdflatex's temporary files (tex, log, aux) - optional functionality
-    
-        os.system("rm -rf newtransfer.aux newtransfer.log newtransfer.tex") 
+
+        if self.sysinfo:    
+            os.system("rm -rf newtransfer.aux newtransfer.log newtransfer.tex") 
+        else:
+            os.system('del "newtransfer.aux" "newtransfer.log" "newtransfer.tex" ')
 
     def change_language(self): # translating method 
 
@@ -151,9 +170,7 @@ class App:
             i.configure(text=self.titles[a])
             a += 1
 
-        
 
 root = tk.Tk()
-app = App(root)
-# app.start()
+app = App(root, platform)
 root.mainloop()
