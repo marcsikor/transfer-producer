@@ -19,8 +19,6 @@ class App:
         else:
             self.sysinfo = False
 
-        print(self.sysinfo)
-
         if self.sysinfo:
             self.font = 'Ubuntu'
         else:
