@@ -13,6 +13,7 @@ class App:
         self.language_tracker = True # language flag
         self.root.title("Transfer order creator 1.0") # window title
         self.root.configure(bg='#d198b7')
+        # self.root.geometry('300x300')
 
         if sysinfo == 'linux':
             self.sysinfo = True
@@ -33,21 +34,36 @@ class App:
         # scroll.pack(side = 'right', fill = 'y')
 
         self.title_label = tk.Label(self.root, font=(self.font,18,'bold'), text="Transfer order creator\n", bg="#d198b7", fg='#000000') #top label
-        self.title_label.pack() # .pack() method used for displaying UI elements
+        self.title_label.grid(columnspan = 2) # .pack() method used for displaying UI elements
 
         # migration to ttk for entries in the future?
-
+        
         # ttk.Style().map('TEntry',
         # background = [('active','white')]
         # )
 
         for i in self.titles: # setting up the labels and entry bars 
+            
             l = tk.Label(root, font=(self.font,16), text=i, bg='#d198b7', fg='#000000')
-            l.pack()
             self.labels.append(l)
-            e = tk.Entry(root, bg="#E1BFFF", bd=2, highlightcolor='#779ecb', selectbackground = '#779ecb', selectforeground = "white", relief='flat')
-            e.pack(ipadx = 100)
+            
+            e = tk.Entry(root, bd=2, highlightcolor='#779ecb', selectbackground = '#779ecb', selectforeground = "white", relief='flat')
             self.entries.append(e)
+
+        j = 0
+        for a in range(2):
+            for i in range(1,9,2):
+                self.labels[j].grid(column = a, row = i)
+                j += 1
+
+        j = 0
+        for a in range(2):
+            for i in range(2,10,2):
+                self.entries[j].grid(column = a, row = i, ipadx = 100, padx = 10)
+                j += 1
+
+            
+
 
         self.currency_dropdown()        
 
@@ -63,13 +79,13 @@ class App:
         activeforeground="white", 
         relief='flat'
         ) # run button
-        self.run_button.pack(pady = 10)
+        self.run_button.grid(pady = 10)
 
         self.language_button = tk.Button(
         self.root, 
         text='Zmień język na polski', 
         font=(self.font,16),
-        width=20, 
+        width=24, 
         command=lambda: self.change_language(), 
         bg = '#86C5DA',
         highlightcolor="#779ecb", 
@@ -77,7 +93,7 @@ class App:
         activeforeground="white", 
         relief='flat'
         )
-        self.language_button.pack(pady = 10) # translation/language button
+        self.language_button.grid(pady = 10, column = 1, row = 11) # translation/language button
 
 
     def currency_dropdown(self):
@@ -85,7 +101,7 @@ class App:
         # making a label for a dropdown
 
         l = tk.Label(root, font=(self.font,16), text="Currency", bg='#d198b7', fg='#000000')
-        l.pack()
+        l.grid()
         self.labels.append(l)
 
         # styling (ttk is a pain)
@@ -96,7 +112,7 @@ class App:
         relief = [('active', 'flat'),('pressed', 'flat')],
         arrowcolor = [('active','white'), ('pressed','white')]
         )
-        
+  
         self.root.option_add('*TCombobox*Listbox*Background', '#86C5DA')
         self.root.option_add('*TCombobox*Listbox*selectBackground', '#779ecb')
         self.root.option_add('*TCombobox*Listbox*selectForeground', 'white')
@@ -106,7 +122,7 @@ class App:
         self.combo = ttk.Combobox(self.root)
         self.combo["values"] = ['PLN','USD','GBP']
         self.combo.current(0)
-        self.combo.pack()
+        self.combo.grid(columnspan = 2)
 
     def transfer(self):
 
