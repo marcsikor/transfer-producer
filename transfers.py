@@ -13,6 +13,7 @@ class App:
         self.language_tracker = True # language flag
         self.root.title("Transfer order creator 1.0") # window title
         self.root.configure(bg='#d198b7')
+        self.dark_mode_flag = True
         # self.root.geometry('300x300')
 
         if sysinfo == 'linux':
@@ -28,19 +29,11 @@ class App:
         self.start()
 
     def start(self):
+
         # maybe a scrollbar in the future?
-        
-        # scroll = tk.Scrollbar(self.root, orient = 'vertical')
-        # scroll.pack(side = 'right', fill = 'y')
 
         self.title_label = tk.Label(self.root, font=(self.font,18,'bold'), text="Transfer order creator\n", bg="#d198b7", fg='#000000') #top label
         self.title_label.grid(columnspan = 2) # .pack() method used for displaying UI elements
-
-        # migration to ttk for entries in the future?
-        
-        # ttk.Style().map('TEntry',
-        # background = [('active','white')]
-        # )
 
         for i in self.titles: # setting up the labels and entry bars 
             
@@ -62,9 +55,6 @@ class App:
                 self.entries[j].grid(column = a, row = i, ipadx = 100, padx = 10)
                 j += 1
 
-            
-
-
         self.currency_dropdown()        
 
         self.run_button = tk.Button(
@@ -79,34 +69,21 @@ class App:
         activeforeground="white", 
         relief='flat'
         ) # run button
-        self.run_button.grid(pady = 10)
+        self.run_button.grid(columnspan = 2, pady = 10)
 
-        self.language_button = tk.Button(
-        self.root, 
-        text='Zmień język na polski', 
-        font=(self.font,16),
-        width=24, 
-        command=lambda: self.change_language(), 
-        bg = '#86C5DA',
-        highlightcolor="#779ecb", 
-        activebackground="#779ecb",
-        activeforeground="white", 
-        relief='flat'
-        )
-        self.language_button.grid(pady = 10, column = 1, row = 11) # translation/language button
-
+        self.menu()
 
     def currency_dropdown(self):
 
         # making a label for a dropdown
 
         l = tk.Label(root, font=(self.font,16), text="Currency", bg='#d198b7', fg='#000000')
-        l.grid()
+        l.grid(columnspan = 2, pady = 10)
         self.labels.append(l)
 
         # styling (ttk is a pain)
 
-        ttk.Style().configure('TCombobox', fieldbackground = "#E1BFFF", background = '#86C5DA', selectbackground = '#779ecb', selectforeground = "white", relief='flat', borderwidth = "0")
+        ttk.Style().configure('TCombobox', fieldbackground = "#86C5DA", background = '#86C5DA', selectbackground = '#779ecb', selectforeground = "white", relief='flat', borderwidth = "0")
         ttk.Style().map('TCombobox',
         background = [('active','#779ecb'), ('pressed', '#779ecb')],
         relief = [('active', 'flat'),('pressed', 'flat')],
@@ -150,7 +127,7 @@ class App:
         else:
             os.system("newtransfer.pdf") # same for windows
 
-        self.temp_files_collector() # removing pdflatex's log and aux files
+        self.temp_fies_collector() # removing pdflatex's log and aux files
 
     def temp_files_collector(self): # collecting pdflatex's temporary files (tex, log, aux) - optional functionality
 
@@ -166,8 +143,11 @@ class App:
             self.additional_titles = ["Pieczęć, data i podpis zleceniodawcy", "Pieczęć", "Opłata", "Odcinek dla banku zleceniodawcy", "Odcinek dla zleceniodawcy", "W", "P"]
             self.root.title("Kreator poleceń przelewu 1.0")
             self.title_label.configure(text = "Kreator polecenia przelewu\n")
-            self.language_button.configure(text = "Change language to english")
+            # self.language_button.configure(text = "Change language to english")
             self.run_button.config(text='Wykonaj')
+            self.filemenu.entryconfig(0, label = "Change language to english")
+            self.filemenu.entryconfig(1, label = "Tryb ciemny")
+            self.filemenu.entryconfig(2, label = "Wyjście")
             self.language_tracker = False
 
         else:
@@ -175,15 +155,62 @@ class App:
             self.additional_titles = ["Stamp, date and signature of the sender", "Stamp", "Fee", "Voucher for the sender's bank", "Voucher for the sender", "D", "T"]
             self.root.title("Transfer order creator 1.0")
             self.title_label.configure(text = "Transfer order creator\n")
-            self.language_button.configure(text = "Zmień język na polski")
+            # self.language_button.configure(text = "Zmień język na polski")
             self.run_button.config(text='Run')
+            self.filemenu.entryconfig(0, label = "Zmień język na polski")
+            self.filemenu.entryconfig(1, label = "Dark mode")
+            self.filemenu.entryconfig(2, label = "Exit")
             self.language_tracker = True
+            
 
         a = 0
         for i in self.labels: # renaming labels
             i.configure(text=self.titles[a])
             a += 1
 
+    def dark_mode(self):
+
+        if self.dark_mode_flag:
+          
+            self.root.configure(bg = '#212121' )
+            for i in self.labels: # renaming labels
+                i.configure(bg = '#212121', fg='#aaaaaa')
+            for i in self.entries:
+                i.configure(bg = '#3d3d3d', fg='#aaaaaa')
+            self.title_label.configure(bg = '#212121', fg='#aaaaaa')
+            self.dark_mode_flag = False
+
+        else:
+            
+            self.root.configure(bg = '#d198b7' )
+            for i in self.labels: # renaming labels
+                i.configure(bg = '#d198b7', fg='#000000')
+            for i in self.entries:
+                i.configure(bg = '#ffffff', fg='#000000')
+            self.title_label.configure(bg = '#d198b7', fg='#000000')
+            self.dark_mode_flag = True
+        
+
+    def menu(self):
+
+        menubar = tk.Menu(root, bg = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white")
+
+        self.filemenu = tk.Menu(menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white" )
+
+        if self.sysinfo:
+            menubar.config(font = 'Ubuntu')
+            self.filemenu.config(font = 'Ubuntu')
+        else:
+            menubar.config(font = 'Arial')
+            self.filemenu.config(font = 'Arial')
+
+        self.filemenu.add_command(label="Zmień język na polski", command=self.change_language)
+        self.filemenu.add_command(label="Dark mode", command=self.dark_mode)
+        self.filemenu.add_command(label="Exit", command=root.quit)
+
+        menubar.add_cascade(label="Options", menu=self.filemenu)
+    
+        self.root.config(menu=menubar)
 
 root = tk.Tk()
 app = App(root, platform)
