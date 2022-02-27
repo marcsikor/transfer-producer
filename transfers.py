@@ -125,7 +125,11 @@ class App:
         status = subprocess.call('pdflatex newtransfer.tex', shell=True) # compiling tex file to pdf
         if status != 0:
             
-            self.error("An error occured.\nPlease check LaTeX installation")
+            if self.language_tracker:
+                self.error("An error occured during LaTeX compilation.\nPlease check whether LaTeX and pdflatex are installed.")
+            else:
+                self.error("Wystąpił błąd podczas kompilacji LaTeX.\nProszę sprawdzić, czy LaTeX i pdflatex są zainstalowane.")
+            return 1
 
         if self.sysinfo:
             subprocess.call("evince newtransfer.pdf", shell=True)  # to display the document in GNOME document viewer (should be altered on windows or other)
@@ -153,6 +157,12 @@ class App:
             self.filemenu.entryconfig(0, label = "Change language to english")
             self.filemenu.entryconfig(1, label = "Tryb ciemny")
             self.filemenu.entryconfig(2, label = "Wyjście")
+
+            save_names = ["Zapisz bieżącego odbiorcę", "Zapisz bieżącego nadawcę", "Odbiorcy", "Nadawcy"]
+
+            for i in range(4):
+                self.saved.entryconfig(i, label = save_names[i])
+
             self.language_tracker = False
 
         else:
@@ -165,8 +175,14 @@ class App:
             self.filemenu.entryconfig(0, label = "Zmień język na polski")
             self.filemenu.entryconfig(1, label = "Dark mode")
             self.filemenu.entryconfig(2, label = "Exit")
-            self.language_tracker = True
             
+            save_names = ["Save current receiver", "Save current sender", "Receivers", "Senders"]
+
+            for i in range(4):
+                self.saved.entryconfig(i, label = save_names[i])
+
+            
+            self.language_tracker = True
 
         a = 0
         for i in self.labels: # renaming labels
@@ -214,8 +230,8 @@ class App:
         self.filemenu.add_command(label="Dark mode", command=self.dark_mode)
         self.filemenu.add_command(label="Exit", command=root.quit)
 
-        self.saved.add_command(label="Save current Receiver", command=lambda: self.save_csv(True))
-        self.saved.add_command(label="Save current Sender", command=lambda: self.save_csv(False))
+        self.saved.add_command(label="Save current receiver", command=lambda: self.save_csv(True))
+        self.saved.add_command(label="Save current sender", command=lambda: self.save_csv(False))
 
         saved_rece = tk.Menu(menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white")
         saved_send = tk.Menu(menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white")
@@ -255,15 +271,27 @@ class App:
     def save_csv(self, test):
 
         if test:
-            name = 'receiver'
+            if self.language_tracker:
+                name = 'receiver'
+            else:
+                name = 'odbiorcy'
             index = [0,1,2]
+        
         else:
-            name = 'sender'
+            if self.language_tracker:
+                name = 'sender'
+            else:
+                name = 'nadawcy'
             index = [4,5,6]
         
         top = tk.Toplevel(self.root)
-        top.title('Saving')
-        tk.Label(top, text = f"Enter {name}'s identification \n Please restart the program in order to view changes", padx = 10, pady = 20).pack()
+        top.configure(bg='#d198b7')
+        if self.language_tracker:
+            top.title('Saving')
+            tk.Label(top, text = f"Enter {name}'s identification code\n Please restart the program in order to view changes", padx = 10, pady = 20, bg='#d198b7').pack()
+        else:
+            top.title('Zapisywanie')
+            tk.Label(top, text = f"Wpisz kod identyfikacyjny {name}\n Zrestartuj program, aby zobaczyć zmiany", padx = 10, pady = 20, bg='#d198b7').pack()
 
         e = tk.Entry(top)
         e.pack()
@@ -285,7 +313,12 @@ class App:
 
         if value == '':
 
-            self.error(f"Enter {name}'s identification code")
+            if self.language_tracker:
+                self.error(f"Enter {name}'s identification code")
+            else:
+                self.error(f"Wpisz kod identyfikacyjny {name}")
+
+            return 1
 
         else:
 
@@ -315,10 +348,13 @@ class App:
     def error(self,text):
 
         top = tk.Toplevel(self.root)
-        top.title('Error')
-        tk.Label(top, text = text, padx = 10, pady = 20).pack()
-        return 1
-            
+        if self.language_tracker:
+            top.title('Error')
+        else:
+            top.title('Błąd')
+        top.configure(bg='#d198b7')
+        tk.Label(top, text = text, padx = 10, pady = 20, bg='#d198b7').pack()
+ 
 
 
 root = tk.Tk()
