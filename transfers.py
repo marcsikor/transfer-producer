@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import ttk
 from sys import platform 
 import os
+import subprocess
+import shlex
 
 class App:
     def __init__(self, root, sysinfo):
@@ -119,22 +121,25 @@ class App:
         with open('newtransfer.tex', 'w') as f: # creating new tex file
             f.write(a)
 
-
-        os.system("pdflatex newtransfer.tex") # compiling tex file to pdf
+        
+        status = subprocess.call('pdflatex newtransfer.tex', shell=True) # compiling tex file to pdf
+        if status != 0:
+            
+            self.error("An error occured.\nPlease check LaTeX installation")
 
         if self.sysinfo:
-            os.system("evince newtransfer.pdf")  # to display the document in GNOME document viewer (should be altered on windows or other)
+            subprocess.call("evince newtransfer.pdf", shell=True)  # to display the document in GNOME document viewer (should be altered on windows or other)
         else:
-            os.system("newtransfer.pdf") # same for windows
+            subprocess.call("newtransfer.pdf") # same for windows
 
-        self.temp_fies_collector() # removing pdflatex's log and aux files
+        self.temp_files_collector() # removing pdflatex's log and aux files
 
     def temp_files_collector(self): # collecting pdflatex's temporary files (tex, log, aux) - optional functionality
 
         if self.sysinfo:    
-            os.system("rm -rf newtransfer.aux newtransfer.log newtransfer.tex") 
+            subprocess.call("rm -rf newtransfer.aux newtransfer.log newtransfer.tex", shell=True) 
         else:
-            os.system('del "newtransfer.aux" "newtransfer.log" "newtransfer.tex" ')
+            subprocess.call('del "newtransfer.aux" "newtransfer.log" "newtransfer.tex" ')
 
     def change_language(self): # translating method 
 
@@ -193,24 +198,128 @@ class App:
 
     def menu(self):
 
+        import csv
+
         menubar = tk.Menu(root, bg = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white")
 
         self.filemenu = tk.Menu(menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white" )
+        self.saved = tk.Menu(menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white" )
 
-        if self.sysinfo:
-            menubar.config(font = 'Ubuntu')
-            self.filemenu.config(font = 'Ubuntu')
-        else:
-            menubar.config(font = 'Arial')
-            self.filemenu.config(font = 'Arial')
+        menubar.config(font = self.font)
+        
+        self.filemenu.config(font = self.font)
+        self.saved.config(font = self.font)
 
         self.filemenu.add_command(label="Zmień język na polski", command=self.change_language)
         self.filemenu.add_command(label="Dark mode", command=self.dark_mode)
         self.filemenu.add_command(label="Exit", command=root.quit)
 
+        self.saved.add_command(label="Save current Receiver", command=lambda: self.save_csv(True))
+        self.saved.add_command(label="Save current Sender", command=lambda: self.save_csv(False))
+
+        saved_rece = tk.Menu(menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white")
+        saved_send = tk.Menu(menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white")
+
+        try:
+            f = open('receivers.csv')
+            reader = list(csv.reader(f))
+
+            for i in reader:
+                saved_rece.add_command(label = i[0], command=lambda i=i: self.fill(i, True))
+            
+            f.close()
+        except:
+            pass
+
+        try:
+
+            f = open('senders.csv')
+            reader = list(csv.reader(f))
+
+            for i in reader:
+                saved_send.add_command(label = i[0], command=lambda i=i: self.fill(i, False))
+                    
+            f.close()
+                
+        except:
+            pass
+
         menubar.add_cascade(label="Options", menu=self.filemenu)
-    
+        menubar.add_cascade(label="Saved", menu=self.saved)
+
+        self.saved.add_cascade(label="Receivers", menu=saved_rece)
+        self.saved.add_cascade(label="Senders", menu=saved_send)
+        
         self.root.config(menu=menubar)
+
+    def save_csv(self, test):
+
+        if test:
+            name = 'receiver'
+            index = [0,1,2]
+        else:
+            name = 'sender'
+            index = [4,5,6]
+        
+        top = tk.Toplevel(self.root)
+        top.title('Saving')
+        tk.Label(top, text = f"Enter {name}'s identification \n Please restart the program in order to view changes", padx = 10, pady = 20).pack()
+
+        e = tk.Entry(top)
+        e.pack()
+
+        tk.Button(
+        top, 
+        text="Save", 
+        font=(self.font,16), 
+        width=10, 
+        command=lambda: self.sub_save(e.get(),index, name, top), 
+        bg = '#86C5DA',
+        highlightcolor="#779ecb", 
+        activebackground="#779ecb",
+        activeforeground="white", 
+        relief='flat'
+        ).pack()
+        
+    def sub_save(self, value, index, name,top):
+
+        if value == '':
+
+            self.error(f"Enter {name}'s identification code")
+
+        else:
+
+            a = value.upper()
+
+            for i in index:
+                a += f",{self.entries[i].get()}"
+
+            with open(f'{name}s.csv', 'a') as f:
+                f.write(a+"\n")
+
+        top.destroy()
+
+    def fill(self, line, test):
+
+        if test:
+            for i in range(3):
+                self.entries[i].delete(0,'end')
+                self.entries[i].insert(0,line[i+1])
+
+        else:
+
+            for i in range(3):
+                self.entries[i+4].delete(0,'end')
+                self.entries[i+4].insert(0,line[i+1])
+
+    def error(self,text):
+
+        top = tk.Toplevel(self.root)
+        top.title('Error')
+        tk.Label(top, text = text, padx = 10, pady = 20).pack()
+        return 1
+            
+
 
 root = tk.Tk()
 app = App(root, platform)
