@@ -1,9 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 from sys import platform 
-import os
 import subprocess
-import shlex
 
 class App:
     def __init__(self, root, sysinfo):
