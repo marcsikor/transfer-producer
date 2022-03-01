@@ -7,17 +7,19 @@ import shlex
 
 class App:
     def __init__(self, root, sysinfo):
+        
         self.root = root
-        self.titles = ["Receiver name", "Receiver name cont.", "Receiver account number", "Value","Sender account number", "Sender name", "Sender name cont.", "Title"]
-        self.additional_titles = ["Stamp, date and signature of the sender", "Stamp", "Fee", "Voucher for the sender's bank", "Voucher for the sender", "D", "T"]
+        # self.titles = ["Receiver name", "Receiver name cont.", "Receiver account number", "Value","Sender account number", "Sender name", "Sender name cont.", "Title"]
+        # self.additional_titles = ["Stamp, date and signature of the sender", "Stamp", "Fee", "Voucher for the sender's bank", "Voucher for the sender", "D", "T"]
         self.entries = [] # list for storing entry objects
         self.labels = [] # list for storing label objects (for translation)
-        self.language_tracker = True # language flag
-        self.root.title("Transfer order creator 1.0") # window title
-        self.root.configure(bg='#d198b7')
-        self.dark_mode_flag = True
+        # self.root.title("Transfer order creator 1.0") # window title
+        self.root.configure()
         # self.root.geometry('300x300')
 
+        self.temp_lang = 0
+        self.temp_dark = 0
+       
         if sysinfo == 'linux':
             self.sysinfo = True
         else:
@@ -28,21 +30,53 @@ class App:
         else:
             self.font = 'Arial'
 
+        
+        with open('config.txt', 'r') as f:
+            lines = f.readlines()
+ 
+        self.language_tracker = bool(int(lines[0]))
+        self.dark_mode_flag = bool(int(lines[1]))
+
+       
+        #     self.language_tracker = True
+        #     self.dark_mode_flag = False
+
+        self.title_label = tk.Label(self.root, font=(self.font,18,'bold'), text="Transfer order creator\n") #top label
+
+        self.currency_dropdown() # currency combobox  
+
+        self.run_button = tk.Button(
+        self.root, 
+        text="Run", 
+        font=(self.font,16), 
+        width=10, 
+        command=lambda: self.transfer(), 
+        bg = '#86C5DA',
+        highlightcolor="#779ecb", 
+        activebackground="#779ecb",
+        activeforeground="white", 
+        relief='flat'
+        ) # run button
+        
+        self.menu() # top menubar        
+        
+        self.change_language() # adding text to everything
+
+        
         self.start()
 
     def start(self):
 
         # maybe a scrollbar in the future?
-
-        self.title_label = tk.Label(self.root, font=(self.font,18,'bold'), text="Transfer order creator\n", bg="#d198b7", fg='#000000') #top label
+        
         self.title_label.grid(columnspan = 2) # .pack() method used for displaying UI elements
 
         for i in self.titles: # setting up the labels and entry bars 
             
-            l = tk.Label(root, font=(self.font,16), text=i, bg='#d198b7', fg='#000000')
+            l = tk.Label(root, font=(self.font,16), text=i)
             self.labels.append(l)
             
-            e = tk.Entry(root, bd=2, highlightcolor='#779ecb', selectbackground = '#779ecb', selectforeground = "white", relief='flat')
+            e = tk.Entry(root, bd=2, relief='flat')
             self.entries.append(e)
 
         j = 0
@@ -57,31 +91,18 @@ class App:
                 self.entries[j].grid(column = a, row = i, ipadx = 100, padx = 10)
                 j += 1
 
-        self.currency_dropdown()        
 
-        self.run_button = tk.Button(
-        self.root, 
-        text="Run", 
-        font=(self.font,16), 
-        width=10, 
-        command=lambda: self.transfer(), 
-        bg = '#86C5DA',
-        highlightcolor="#779ecb", 
-        activebackground="#779ecb",
-        activeforeground="white", 
-        relief='flat'
-        ) # run button
+        self.l.grid(columnspan = 2, pady = 10)
+        
+        self.combo.grid(columnspan = 2)
+
         self.run_button.grid(columnspan = 2, pady = 10)
 
-        self.menu()
+        self.dark_mode()
 
     def currency_dropdown(self):
 
-        # making a label for a dropdown
-
-        l = tk.Label(root, font=(self.font,16), text="Currency", bg='#d198b7', fg='#000000')
-        l.grid(columnspan = 2, pady = 10)
-        self.labels.append(l)
+        self.l = tk.Label(root, font=(self.font,16), text="Currency") #label for currency defined here to avoid collision with initial widget positioning
 
         # styling (ttk is a pain)
 
@@ -101,7 +122,6 @@ class App:
         self.combo = ttk.Combobox(self.root)
         self.combo["values"] = ['PLN','USD','GBP']
         self.combo.current(0)
-        self.combo.grid(columnspan = 2)
 
     def transfer(self):
 
@@ -148,12 +168,17 @@ class App:
     def change_language(self): # translating method 
 
         if self.language_tracker:
-            self.titles = ["Nazwa odbiorcy","Nazwa odbiorcy cd.","Nr rachunku odbiorcy","Kwota","Nr rachunku zleceniodawcy","Nazwa zleceniodawcy","Nazwa zleceniodawcy cd.","Tytuł", "Waluta"]
+            self.titles = ["Nazwa odbiorcy","Nazwa odbiorcy cd.","Nr rachunku odbiorcy","Kwota","Nr rachunku zleceniodawcy","Nazwa zleceniodawcy","Nazwa zleceniodawcy cd.","Tytuł"]
             self.additional_titles = ["Pieczęć, data i podpis zleceniodawcy", "Pieczęć", "Opłata", "Odcinek dla banku zleceniodawcy", "Odcinek dla zleceniodawcy", "W", "P"]
             self.root.title("Kreator poleceń przelewu 1.0")
             self.title_label.configure(text = "Kreator polecenia przelewu\n")
             # self.language_button.configure(text = "Change language to english")
             self.run_button.config(text='Wykonaj')
+            self.l.config(text='Waluta')
+
+            self.menubar.entryconfig(1, label = "Opcje")
+            self.menubar.entryconfig(2, label = "Zapisani")
+            
             self.filemenu.entryconfig(0, label = "Change language to english")
             self.filemenu.entryconfig(1, label = "Tryb ciemny")
             self.filemenu.entryconfig(2, label = "Wyjście")
@@ -163,15 +188,22 @@ class App:
             for i in range(4):
                 self.saved.entryconfig(i, label = save_names[i])
 
+            self.temp_lang = 1
+
             self.language_tracker = False
 
         else:
-            self.titles = ["Receiver name", "Receiver name cont.", "Receiver account number", "Value","Sender account number", "Sender name", "Sender name cont.", "Title", "Currency"]
+            self.titles = ["Receiver name", "Receiver name cont.", "Receiver account number", "Value","Sender account number", "Sender name", "Sender name cont.", "Title"]
             self.additional_titles = ["Stamp, date and signature of the sender", "Stamp", "Fee", "Voucher for the sender's bank", "Voucher for the sender", "D", "T"]
             self.root.title("Transfer order creator 1.0")
             self.title_label.configure(text = "Transfer order creator\n")
             # self.language_button.configure(text = "Zmień język na polski")
             self.run_button.config(text='Run')
+            self.l.config(text='Currency')
+
+            self.menubar.entryconfig(1, label = "Options")
+            self.menubar.entryconfig(2, label = "Saved")
+            
             self.filemenu.entryconfig(0, label = "Zmień język na polski")
             self.filemenu.entryconfig(1, label = "Dark mode")
             self.filemenu.entryconfig(2, label = "Exit")
@@ -181,6 +213,7 @@ class App:
             for i in range(4):
                 self.saved.entryconfig(i, label = save_names[i])
 
+            self.temp_lang = 0
             
             self.language_tracker = True
 
@@ -195,10 +228,12 @@ class App:
           
             self.root.configure(bg = '#212121' )
             for i in self.labels: # renaming labels
-                i.configure(bg = '#212121', fg='#aaaaaa')
+                i.configure(bg = '#212121', fg='#dddddd')
+            self.l.config(bg = '#212121', fg='#dddddd')
             for i in self.entries:
-                i.configure(bg = '#3d3d3d', fg='#aaaaaa')
-            self.title_label.configure(bg = '#212121', fg='#aaaaaa')
+                i.configure(bg = '#3d3d3d', fg='#dddddd')
+            self.title_label.configure(bg = '#212121', fg='#dddddd')
+            self.temp_dark = 1
             self.dark_mode_flag = False
 
         else:
@@ -206,9 +241,11 @@ class App:
             self.root.configure(bg = '#d198b7' )
             for i in self.labels: # renaming labels
                 i.configure(bg = '#d198b7', fg='#000000')
+            self.l.config(bg = '#d198b7', fg='#000000')
             for i in self.entries:
-                i.configure(bg = '#ffffff', fg='#000000')
+                i.configure(bg = '#dddddd', fg='#000000')
             self.title_label.configure(bg = '#d198b7', fg='#000000')
+            self.temp_dark = 0
             self.dark_mode_flag = True
         
 
@@ -216,25 +253,25 @@ class App:
 
         import csv
 
-        menubar = tk.Menu(root, bg = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white")
+        self.menubar = tk.Menu(root, bg = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white")
 
-        self.filemenu = tk.Menu(menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white" )
-        self.saved = tk.Menu(menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white" )
+        self.filemenu = tk.Menu(self.menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white" )
+        self.saved = tk.Menu(self.menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white" )
 
-        menubar.config(font = self.font)
+        self.menubar.config(font = self.font)
         
         self.filemenu.config(font = self.font)
         self.saved.config(font = self.font)
 
-        self.filemenu.add_command(label="Zmień język na polski", command=self.change_language)
-        self.filemenu.add_command(label="Dark mode", command=self.dark_mode)
-        self.filemenu.add_command(label="Exit", command=root.quit)
+        self.filemenu.add_command(command=self.change_language)
+        self.filemenu.add_command(command=self.dark_mode)
+        self.filemenu.add_command(command=root.quit)
 
-        self.saved.add_command(label="Save current receiver", command=lambda: self.save_csv(True))
-        self.saved.add_command(label="Save current sender", command=lambda: self.save_csv(False))
+        self.saved.add_command(command=lambda: self.save_csv(True))
+        self.saved.add_command(command=lambda: self.save_csv(False))
 
-        saved_rece = tk.Menu(menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white")
-        saved_send = tk.Menu(menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white")
+        saved_rece = tk.Menu(self.menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white")
+        saved_send = tk.Menu(self.menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white")
 
         try:
             f = open('receivers.csv')
@@ -245,7 +282,7 @@ class App:
             
             f.close()
         except:
-            pass
+            pass # it does look horribly, but there is a reason for it
 
         try:
 
@@ -260,13 +297,13 @@ class App:
         except:
             pass
 
-        menubar.add_cascade(label="Options", menu=self.filemenu)
-        menubar.add_cascade(label="Saved", menu=self.saved)
+        self.menubar.add_cascade(menu=self.filemenu)
+        self.menubar.add_cascade(menu=self.saved)
 
-        self.saved.add_cascade(label="Receivers", menu=saved_rece)
-        self.saved.add_cascade(label="Senders", menu=saved_send)
+        self.saved.add_cascade(menu=saved_rece)
+        self.saved.add_cascade(menu=saved_send)
         
-        self.root.config(menu=menubar)
+        self.root.config(menu=self.menubar)
 
     def save_csv(self, test):
 
@@ -285,16 +322,26 @@ class App:
             index = [4,5,6]
         
         top = tk.Toplevel(self.root)
-        top.configure(bg='#d198b7')
+ 
         if self.language_tracker:
             top.title('Saving')
-            tk.Label(top, text = f"Enter {name}'s identification code\n Please restart the program in order to view changes", padx = 10, pady = 20, bg='#d198b7').pack()
+            temp_label = tk.Label(top, text = f"Enter {name}'s identification code\n Restart the program in order to view changes", padx = 10, pady = 20)
         else:
             top.title('Zapisywanie')
-            tk.Label(top, text = f"Wpisz kod identyfikacyjny {name}\n Zrestartuj program, aby zobaczyć zmiany", padx = 10, pady = 20, bg='#d198b7').pack()
-
+            temp_label = tk.Label(top, text = f"Wpisz kod identyfikacyjny {name}\n Zrestartuj program, aby zobaczyć zmiany", padx = 10, pady = 20)
+        
         e = tk.Entry(top)
-        e.pack()
+        
+        if self.dark_mode_flag:
+            top.configure(bg='#d198b7')
+            temp_label.config(bg='#d198b7')
+        else:
+            top.configure(bg = '#212121')
+            temp_label.config(bg = '#212121', fg='#dddddd')
+            e.config(bg = '#3d3d3d', fg='#dddddd')
+
+        temp_label.pack()
+        e.pack(pady = 10)
 
         tk.Button(
         top, 
@@ -306,7 +353,7 @@ class App:
         highlightcolor="#779ecb", 
         activebackground="#779ecb",
         activeforeground="white", 
-        relief='flat'
+        relief='flat',
         ).pack()
         
     def sub_save(self, value, index, name,top):
@@ -327,7 +374,7 @@ class App:
             for i in index:
                 a += f",{self.entries[i].get()}"
 
-            with open(f'{name}s.csv', 'a') as f:
+            with open(f'receivers.csv', 'a') as f:
                 f.write(a+"\n")
 
         top.destroy()
@@ -352,11 +399,22 @@ class App:
             top.title('Error')
         else:
             top.title('Błąd')
-        top.configure(bg='#d198b7')
-        tk.Label(top, text = text, padx = 10, pady = 20, bg='#d198b7').pack()
- 
 
+        temp_label = tk.Label(top, text = text, padx = 10, pady = 20)
+        if self.dark_mode_flag:
+            top.configure(bg='#d198b7')
+            temp_label.config(bg='#d198b7')
+        else:
+            top.configure(bg = '#212121')
+            temp_label.config(bg = '#212121', fg='#dddddd')
+        temp_label.pack()
+
+    def save_config(self):
+
+        with open('config.txt', 'w') as f:
+            f.write(str(self.temp_lang) + '\n' + str(self.temp_dark))
 
 root = tk.Tk()
 app = App(root, platform)
 root.mainloop()
+app.save_config()
