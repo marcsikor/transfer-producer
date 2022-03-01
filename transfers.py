@@ -66,10 +66,8 @@ class App:
         self.start()
 
     def start(self):
-
-        # maybe a scrollbar in the future?
         
-        self.title_label.grid(columnspan = 2) # .pack() method used for displaying UI elements
+        self.title_label.grid(columnspan = 2) # .grid() method used for displaying UI elements
 
         for i in self.titles: # setting up the labels and entry bars 
             
@@ -172,7 +170,6 @@ class App:
             self.additional_titles = ["Pieczęć, data i podpis zleceniodawcy", "Pieczęć", "Opłata", "Odcinek dla banku zleceniodawcy", "Odcinek dla zleceniodawcy", "W", "P"]
             self.root.title("Kreator poleceń przelewu 1.0")
             self.title_label.configure(text = "Kreator polecenia przelewu\n")
-            # self.language_button.configure(text = "Change language to english")
             self.run_button.config(text='Wykonaj')
             self.l.config(text='Waluta')
 
@@ -197,7 +194,6 @@ class App:
             self.additional_titles = ["Stamp, date and signature of the sender", "Stamp", "Fee", "Voucher for the sender's bank", "Voucher for the sender", "D", "T"]
             self.root.title("Transfer order creator 1.0")
             self.title_label.configure(text = "Transfer order creator\n")
-            # self.language_button.configure(text = "Zmień język na polski")
             self.run_button.config(text='Run')
             self.l.config(text='Currency')
 
@@ -249,13 +245,13 @@ class App:
             self.dark_mode_flag = True
         
 
-    def menu(self):
+    def menu(self): # top menu
 
-        import csv
+        import csv # csv format used to save senders/receivers
 
         self.menubar = tk.Menu(root, bg = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white")
 
-        self.filemenu = tk.Menu(self.menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white" )
+        self.filemenu = tk.Menu(self.menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white" ) # submenus
         self.saved = tk.Menu(self.menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white" )
 
         self.menubar.config(font = self.font)
@@ -270,23 +266,23 @@ class App:
         self.saved.add_command(command=lambda: self.save_csv(True))
         self.saved.add_command(command=lambda: self.save_csv(False))
 
-        saved_rece = tk.Menu(self.menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white")
+        saved_rece = tk.Menu(self.menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white") # cascade sub sub menu
         saved_send = tk.Menu(self.menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white")
 
         try:
-            f = open('receivers.csv')
+            f = open('receivers.csv') # file with saved receivers
             reader = list(csv.reader(f))
 
             for i in reader:
                 saved_rece.add_command(label = i[0], command=lambda i=i: self.fill(i, True))
             
             f.close()
-        except:
-            pass # it does look horribly, but there is a reason for it
+        except FileNotFoundError: 
+            pass # ignoring the code if there is no file
 
         try:
 
-            f = open('senders.csv')
+            f = open('senders.csv') # file with saved senders
             reader = list(csv.reader(f))
 
             for i in reader:
@@ -294,7 +290,7 @@ class App:
                     
             f.close()
                 
-        except:
+        except FileNotFoundError:
             pass
 
         self.menubar.add_cascade(menu=self.filemenu)
@@ -305,7 +301,9 @@ class App:
         
         self.root.config(menu=self.menubar)
 
-    def save_csv(self, test):
+    # saving receiver/sender
+  
+    def save_csv(self, test): 
 
         if test:
             if self.language_tracker:
@@ -320,18 +318,24 @@ class App:
             else:
                 name = 'nadawcy'
             index = [4,5,6]
-        
-        top = tk.Toplevel(self.root)
+
+        # pop-up window
+
+        top = tk.Toplevel(self.root) # top 
  
+        # adding identification code which will be viewed in the menu
+
         if self.language_tracker:
             top.title('Saving')
-            temp_label = tk.Label(top, text = f"Enter {name}'s identification code\n Restart the program in order to view changes", padx = 10, pady = 20)
+            temp_label = tk.Label(top, text = f"Enter {name}'s identification code\n This code will allow you to distinguish saved positions in the menu \n Restart the program in order to view changes", padx = 10, pady = 20)
         else:
-            top.title('Zapisywanie')
-            temp_label = tk.Label(top, text = f"Wpisz kod identyfikacyjny {name}\n Zrestartuj program, aby zobaczyć zmiany", padx = 10, pady = 20)
+            top.title('Zapisywanie') 
+            temp_label = tk.Label(top, text = f"Wpisz kod identyfikacyjny {name}\n Ten kod pozwoli ci rozróżnić zapisane pozycje w menu \n Zrestartuj program, aby zobaczyć zmiany", padx = 10, pady = 20)
         
         e = tk.Entry(top)
-        
+
+        # dark mode provision
+
         if self.dark_mode_flag:
             top.configure(bg='#d198b7')
             temp_label.config(bg='#d198b7')
@@ -339,6 +343,7 @@ class App:
             top.configure(bg = '#212121')
             temp_label.config(bg = '#212121', fg='#dddddd')
             e.config(bg = '#3d3d3d', fg='#dddddd')
+
 
         temp_label.pack()
         e.pack(pady = 10)
@@ -356,9 +361,13 @@ class App:
         relief='flat',
         ).pack()
         
-    def sub_save(self, value, index, name,top):
+    # saving the code from the pop-up and entered data
+
+    def sub_save(self, value, index, name, top):
 
         if value == '':
+
+            # pop-up error
 
             if self.language_tracker:
                 self.error(f"Enter {name}'s identification code")
@@ -392,6 +401,8 @@ class App:
                 self.entries[i+4].delete(0,'end')
                 self.entries[i+4].insert(0,line[i+1])
 
+    # pop-up error method
+
     def error(self,text):
 
         top = tk.Toplevel(self.root)
@@ -409,6 +420,8 @@ class App:
             temp_label.config(bg = '#212121', fg='#dddddd')
         temp_label.pack()
 
+    # saving configuration (dark mode and language)
+
     def save_config(self):
 
         with open('config.txt', 'w') as f:
@@ -417,4 +430,7 @@ class App:
 root = tk.Tk()
 app = App(root, platform)
 root.mainloop()
+
+# saving configuration upon closing the window
+
 app.save_config()
