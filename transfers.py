@@ -2,68 +2,161 @@ import tkinter as tk
 from tkinter import ttk
 from sys import platform 
 import subprocess
+from csv import reader
 
 class App:
     def __init__(self, root, sysinfo):
         
         self.root = root
-        # self.titles = ["Receiver name", "Receiver name cont.", "Receiver account number", "Value","Sender account number", "Sender name", "Sender name cont.", "Title"]
-        # self.additional_titles = ["Stamp, date and signature of the sender", "Stamp", "Fee", "Voucher for the sender's bank", "Voucher for the sender", "D", "T"]
-        self.entries = [] # list for storing entry objects
-        self.labels = [] # list for storing label objects (for translation)
-        # self.root.title("Transfer order creator 1.0") # window title
-        self.root.configure()
-        # self.root.geometry('300x300')
+
+        # lists for storing entry and label objects - do not repeat yourself (too much)
+
+        self.entries = [] 
+        self.labels = [] 
+    
+        # variables for writing to file
 
         self.temp_lang = 0
         self.temp_dark = 0
        
+        # determining the operationg system
+
         if sysinfo == 'linux':
             self.sysinfo = True
         else:
             self.sysinfo = False
+
+        # setting up the font
 
         if self.sysinfo:
             self.font = 'Ubuntu'
         else:
             self.font = 'Arial'
 
+        # importing saved settings
+
+        try:
+            with open('config.txt', 'r') as f:
+                lines = f.readlines()
+    
+            self.language_tracker = bool(int(lines[0]))
+            self.dark_mode_flag = bool(int(lines[1]))
         
-        with open('config.txt', 'r') as f:
-            lines = f.readlines()
- 
-        self.language_tracker = bool(int(lines[0]))
-        self.dark_mode_flag = bool(int(lines[1]))
+        except FileNotFoundError: # defaults
 
-       
-        #     self.language_tracker = True
-        #     self.dark_mode_flag = False
+            self.language_tracker = True
+            self.dark_mode_flag = True
 
-        self.title_label = tk.Label(self.root, font=(self.font,18,'bold'), text="Transfer order creator\n") #top label
+        # top label definition  
 
-        self.currency_dropdown() # currency combobox  
+        self.title_label = tk.Label(self.root, font=(self.font,18,'bold'), text="Transfer order creator\n")
+
+        # currency combobox menu code
+
+        self.l = tk.Label(root, font=(self.font,16), text="Currency") #label for currency defined here to avoid collision with initial widget positioning
+
+            # styling (ttk is a pain)
+
+        ttk.Style().configure('TCombobox', fieldbackground = "#86C5DA", background = '#86C5DA', selectbackground = '#779ecb', selectforeground = "white", relief='flat', borderwidth = "0")
+        ttk.Style().map('TCombobox',
+        background = [('active','#779ecb'), ('pressed', '#779ecb')],
+        relief = [('active', 'flat'),('pressed', 'flat')],
+        arrowcolor = [('active','white'), ('pressed','white')]
+        )
+  
+        self.root.option_add('*TCombobox*Listbox*Background', '#86C5DA')
+        self.root.option_add('*TCombobox*Listbox*selectBackground', '#779ecb')
+        self.root.option_add('*TCombobox*Listbox*selectForeground', 'white')
+
+            # finally dropdown menu
+
+        self.combo = ttk.Combobox(self.root)
+        self.combo["values"] = ['PLN','USD','GBP']
+        self.combo.current(0) 
+
+        # run button setup
 
         self.run_button = tk.Button(
         self.root, 
         text="Run", 
         font=(self.font,16), 
         width=10, 
-        command=lambda: self.transfer(), 
+        command=self.transfer, 
         bg = '#86C5DA',
         highlightcolor="#779ecb", 
         activebackground="#779ecb",
         activeforeground="white", 
         relief='flat'
         ) # run button
+
+        # dropdown top bar menus
+
+        self.menubar = tk.Menu(root, bg = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white")
+
+        self.filemenu = tk.Menu(self.menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white" ) # submenus
+        self.saved = tk.Menu(self.menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white" )
+
+        self.menubar.config(font = self.font)
         
-        self.menu() # top menubar        
+        self.filemenu.config(font = self.font)
+        self.saved.config(font = self.font)
+
+        self.filemenu.add_command(command=self.change_language)
+        self.filemenu.add_command(command=self.dark_mode)
+        self.filemenu.add_command(command=root.quit)
+
+        self.saved.add_command(command=lambda: self.save_csv(True))
+        self.saved.add_command(command=lambda: self.save_csv(False))
+
+        saved_rece = tk.Menu(self.menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white") # cascade sub sub menu
+        saved_send = tk.Menu(self.menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white")
+
+        # adding the cascade menu for senders/receivers
+
+        try:
+            f = open('receivers.csv', 'r') # file with saved receivers
+            csvreader = list(reader(f))
+
+            for i in csvreader:
+                saved_rece.add_command(label = i[0], command=lambda i=i: self.fill(i, True))
+            
+            # first receiver on startup flag
+
+            receiver_present = csvreader[0]
+
+            f.close()
+
+        except FileNotFoundError: 
+            receiver_present = ''
+
+        try:
+
+            f = open('senders.csv', 'r') # file with saved senders
+            csvreader = list(reader(f))
+
+            for i in csvreader:
+                saved_send.add_command(label = i[0], command=lambda i=i: self.fill(i, False))
+
+            # first sender on startup flag
+
+            sender_present = csvreader[0]
+            
+            f.close()
+                
+        except FileNotFoundError:
+            sender_present = ''
+
+        self.menubar.add_cascade(menu=self.filemenu)
+        self.menubar.add_cascade(menu=self.saved)
+
+        self.saved.add_cascade(menu=saved_rece)
+        self.saved.add_cascade(menu=saved_send)
+        
+        self.root.config(menu=self.menubar)        
         
         self.change_language() # adding text to everything
 
-        
-        self.start()
-
-    def start(self):
+        # placing all widgets
         
         self.title_label.grid(columnspan = 2) # .grid() method used for displaying UI elements
 
@@ -94,30 +187,17 @@ class App:
 
         self.run_button.grid(columnspan = 2, pady = 10)
 
+        # filling the first sender/receiver on startup:
+        
+        if receiver_present != '':
+            self.fill(receiver_present,True)
+        if sender_present != '':
+            self.fill(sender_present,False)
+
+
         self.dark_mode()
 
-    def currency_dropdown(self):
-
-        self.l = tk.Label(root, font=(self.font,16), text="Currency") #label for currency defined here to avoid collision with initial widget positioning
-
-        # styling (ttk is a pain)
-
-        ttk.Style().configure('TCombobox', fieldbackground = "#86C5DA", background = '#86C5DA', selectbackground = '#779ecb', selectforeground = "white", relief='flat', borderwidth = "0")
-        ttk.Style().map('TCombobox',
-        background = [('active','#779ecb'), ('pressed', '#779ecb')],
-        relief = [('active', 'flat'),('pressed', 'flat')],
-        arrowcolor = [('active','white'), ('pressed','white')]
-        )
-  
-        self.root.option_add('*TCombobox*Listbox*Background', '#86C5DA')
-        self.root.option_add('*TCombobox*Listbox*selectBackground', '#779ecb')
-        self.root.option_add('*TCombobox*Listbox*selectForeground', 'white')
-
-        # dropdown menu
-
-        self.combo = ttk.Combobox(self.root)
-        self.combo["values"] = ['PLN','USD','GBP']
-        self.combo.current(0)
+    # run button function
 
     def transfer(self):
 
@@ -152,16 +232,16 @@ class App:
         else:
             subprocess.call("newtransfer.pdf") # same for windows
 
-        self.temp_files_collector() # removing pdflatex's log and aux files
-
-    def temp_files_collector(self): # collecting pdflatex's temporary files (tex, log, aux) - optional functionality
+    # removing pdflatex's remaining files (tex, log, aux)
 
         if self.sysinfo:    
             subprocess.call("rm -rf newtransfer.aux newtransfer.log newtransfer.tex", shell=True) 
         else:
             subprocess.call('del "newtransfer.aux" "newtransfer.log" "newtransfer.tex" ')
 
-    def change_language(self): # translating method 
+    # changing_language and adding text method
+
+    def change_language(self): 
 
         if self.language_tracker:
             self.titles = ["Nazwa odbiorcy","Nazwa odbiorcy cd.","Nr rachunku odbiorcy","Kwota","Nr rachunku zleceniodawcy","Nazwa zleceniodawcy","Nazwa zleceniodawcy cd.","Tytuł"]
@@ -216,6 +296,8 @@ class App:
             i.configure(text=self.titles[a])
             a += 1
 
+    # dark mode function
+
     def dark_mode(self):
 
         if self.dark_mode_flag:
@@ -225,7 +307,7 @@ class App:
                 i.configure(bg = '#212121', fg='#dddddd')
             self.l.config(bg = '#212121', fg='#dddddd')
             for i in self.entries:
-                i.configure(bg = '#3d3d3d', fg='#dddddd')
+                i.configure(bg = '#3d3d3d', fg='#dddddd', highlightcolor = "#dddddd", highlightbackground="#000000")
             self.title_label.configure(bg = '#212121', fg='#dddddd')
             self.temp_dark = 1
             self.dark_mode_flag = False
@@ -237,73 +319,21 @@ class App:
                 i.configure(bg = '#d198b7', fg='#000000')
             self.l.config(bg = '#d198b7', fg='#000000')
             for i in self.entries:
-                i.configure(bg = '#dddddd', fg='#000000')
+                i.configure(bg = '#dddddd', fg='#000000', highlightcolor = "black", highlightbackground="#d198b7")
             self.title_label.configure(bg = '#d198b7', fg='#000000')
             self.temp_dark = 0
             self.dark_mode_flag = True
-        
-
-    def menu(self): # top menu
-
-        import csv # csv format used to save senders/receivers
-
-        self.menubar = tk.Menu(root, bg = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white")
-
-        self.filemenu = tk.Menu(self.menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white" ) # submenus
-        self.saved = tk.Menu(self.menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white" )
-
-        self.menubar.config(font = self.font)
-        
-        self.filemenu.config(font = self.font)
-        self.saved.config(font = self.font)
-
-        self.filemenu.add_command(command=self.change_language)
-        self.filemenu.add_command(command=self.dark_mode)
-        self.filemenu.add_command(command=root.quit)
-
-        self.saved.add_command(command=lambda: self.save_csv(True))
-        self.saved.add_command(command=lambda: self.save_csv(False))
-
-        saved_rece = tk.Menu(self.menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white") # cascade sub sub menu
-        saved_send = tk.Menu(self.menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white")
-
-        try:
-            f = open('receivers.csv') # file with saved receivers
-            reader = list(csv.reader(f))
-
-            for i in reader:
-                saved_rece.add_command(label = i[0], command=lambda i=i: self.fill(i, True))
-            
-            f.close()
-        except FileNotFoundError: 
-            pass # ignoring the code if there is no file
-
-        try:
-
-            f = open('senders.csv') # file with saved senders
-            reader = list(csv.reader(f))
-
-            for i in reader:
-                saved_send.add_command(label = i[0], command=lambda i=i: self.fill(i, False))
-                    
-            f.close()
-                
-        except FileNotFoundError:
-            pass
-
-        self.menubar.add_cascade(menu=self.filemenu)
-        self.menubar.add_cascade(menu=self.saved)
-
-        self.saved.add_cascade(menu=saved_rece)
-        self.saved.add_cascade(menu=saved_send)
-        
-        self.root.config(menu=self.menubar)
 
     # saving receiver/sender
   
     def save_csv(self, test): 
 
+        # technically do not repeat yourself :D
+
         if test:
+            
+            filename = 'receivers.csv'
+
             if self.language_tracker:
                 name = 'receiver'
             else:
@@ -311,10 +341,13 @@ class App:
             index = [0,1,2]
         
         else:
+
+            filename = 'senders.csv'
+
             if self.language_tracker:
                 name = 'sender'
             else:
-                name = 'nadawcy'
+                name = 'zleceniobiorcy'
             index = [4,5,6]
 
         # pop-up window
@@ -342,6 +375,7 @@ class App:
             temp_label.config(bg = '#212121', fg='#dddddd')
             e.config(bg = '#3d3d3d', fg='#dddddd')
 
+        # packing the widgets in the pop-up
 
         temp_label.pack()
         e.pack(pady = 10)
@@ -351,7 +385,7 @@ class App:
         text="Save", 
         font=(self.font,16), 
         width=10, 
-        command=lambda: self.sub_save(e.get(),index, name, top), 
+        command=lambda: self.sub_save(e.get(), index, name, top, filename), 
         bg = '#86C5DA',
         highlightcolor="#779ecb", 
         activebackground="#779ecb",
@@ -361,11 +395,11 @@ class App:
         
     # saving the code from the pop-up and entered data
 
-    def sub_save(self, value, index, name, top):
+    def sub_save(self, value, index, name, top, filename):
 
         if value == '':
 
-            # pop-up error
+            # error pop-up
 
             if self.language_tracker:
                 self.error(f"Enter {name}'s identification code")
@@ -381,10 +415,14 @@ class App:
             for i in index:
                 a += f",{self.entries[i].get()}"
 
-            with open(f'receivers.csv', 'a') as f:
+            print(filename)
+
+            with open(filename, 'a') as f:
                 f.write(a+"\n")
 
         top.destroy()
+
+    # filling data function
 
     def fill(self, line, test):
 
@@ -425,10 +463,11 @@ class App:
         with open('config.txt', 'w') as f:
             f.write(str(self.temp_lang) + '\n' + str(self.temp_dark))
 
+
 root = tk.Tk()
 app = App(root, platform)
 root.mainloop()
 
-# saving configuration upon closing the window
+# saving configuration after closing the window
 
 app.save_config()
