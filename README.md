@@ -4,7 +4,7 @@ This program uses python's tkinter module and LaTeX (pdflatex required) to produ
 
 ![First picture](/repository/readme-assets/first-pic.png?raw=true "First picture")
 
-It was made originally for Linux and GNOME desktop environment (it utilizes GNOME's Evince pdf reader), but it has been ported to Windows as well.
+It was made originally for Linux, but it has been ported to Windows as well.
 
 ![Second picture](/repository/readme-assets/sec-pic.png?raw=true "Second picture")
 

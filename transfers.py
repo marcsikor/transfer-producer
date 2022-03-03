@@ -130,11 +130,11 @@ class App:
             for i in csvreader:
                 saved_rece.add_command(label = i[0], command=lambda i=i: self.fill(i, True))
                 remov_rece.add_command(label = i[0], command=lambda i=i: self.remove_saved(i,True))
-            
+
             # first receiver on startup
-    
+
             receiver_present = list(csvreader[0])
-    
+
             f.close()
 
         except (FileNotFoundError, IndexError): # exception when there is no file or the file is empty
@@ -244,7 +244,7 @@ class App:
             return 1
 
         if self.sysinfo:
-            subprocess.call("evince newtransfer.pdf", shell=True)  # to display the document in GNOME document viewer (should be altered on windows or other)
+            status = subprocess.call("xdg-open newtransfer.pdf", shell=True)  # to display pdf in linux (xdg-open is an x11 command to open in default pdf editor)  
         else:
             subprocess.call("newtransfer.pdf") # same for windows
 
