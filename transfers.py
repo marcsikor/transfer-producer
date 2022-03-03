@@ -123,21 +123,23 @@ class App:
 
         # adding the cascade menu for senders/receivers
 
-        #try:
-        f = open('receivers.csv', 'r') # file with saved receivers
-        csvreader = list(reader(f))
-        for i in csvreader:
-            saved_rece.add_command(label = i[0], command=lambda i=i: self.fill(i, True))
-            remov_rece.add_command(label = i[0], command=lambda i=i: self.remove_saved(i,True))
-        
-        # first receiver on startup
+        try:
 
-        receiver_present = list(csvreader[0])
+            f = open('receivers.csv', 'r') # file with saved receivers
+            csvreader = list(reader(f))
+            for i in csvreader:
+                saved_rece.add_command(label = i[0], command=lambda i=i: self.fill(i, True))
+                remov_rece.add_command(label = i[0], command=lambda i=i: self.remove_saved(i,True))
+            
+            # first receiver on startup
+    
+            receiver_present = list(csvreader[0])
+    
+            f.close()
 
-        f.close()
-
-        #except (FileNotFoundError, IndexError): # exception when there is no file or the file is empty
-            #receiver_present = ''
+        except (FileNotFoundError, IndexError): # exception when there is no file or the file is empty
+            
+            receiver_present = ''
 
         try:
 
@@ -155,6 +157,7 @@ class App:
             f.close()
                 
         except (FileNotFoundError, IndexError): 
+            
             sender_present = ''
 
         self.menubar.add_cascade(menu=self.filemenu)
@@ -490,8 +493,6 @@ class App:
     # saving configuration (dark mode and language)
 
     def save_config(self):
-
-        print(a)
 
         with open('config.txt', 'w') as f:
             f.write(str(self.temp_lang) + '\n' + str(self.temp_dark))

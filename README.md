@@ -1,9 +1,13 @@
 # Transfer producer
 
-Below program uses python's tkinter module and LaTeX (pdflatex required) to produce a transfer print (in .pdf) used in traditional transfer orders - in polish and english.
+This program uses python's tkinter module and LaTeX (pdflatex required) to produce a transfer print (in pdf) used in traditional transfer orders - in polish and english.
 
-It supports dark mode and saving receivers/senders data (in csv formats)
+![First picture](/repository/readme-assets/first-pic.png?raw=true "First picture")
 
-Has been created Linux and GNOME Desktop Environment (the program uses GNOME default pdf reader) in mind, but it has been ported to Windows as well.
+It was made originally for Linux and GNOME desktop environment (it utilizes GNOME's Evince pdf reader), but it has been ported to Windows as well.
 
-Please note that the files have to be in the same directory, or the path to the file has to be changed.
+![Second picture](/repository/readme-assets/sec-pic.png?raw=true "Second picture")
+
+It supports dark mode and saving receivers/senders data on your drive with a (in csv formats)
+
+Please note that the transfer.tex file has to be in the same directory for the program to work correctly.
