@@ -8,6 +8,9 @@ class App:
     def __init__(self, root, sysinfo):
         
         self.root = root
+        self.root.resizable(True, True)
+        self.root.grid_columnconfigure(0, weight=1)
+        self.root.grid_columnconfigure(1, weight=1)
 
         # lists for storing entry and label objects - do not repeat yourself (too much)
 
@@ -42,7 +45,7 @@ class App:
             self.language_tracker = bool(int(lines[0]))
             self.dark_mode_flag = bool(int(lines[1]))
         
-        except FileNotFoundError: # defaults
+        except (FileNotFoundError, IndexError): # defaults
 
             self.language_tracker = True
             self.dark_mode_flag = True
@@ -53,7 +56,7 @@ class App:
 
         # currency combobox menu code
 
-        self.l = tk.Label(root, font=(self.font,16), text="Currency") #label for currency defined here to avoid collision with initial widget positioning
+        self.currency_label= tk.Label(self.root, font=(self.font,16), text="Currency") #label for currency defined here to avoid collision with initial widget positioning
 
             # styling (ttk is a pain)
 
@@ -108,26 +111,33 @@ class App:
         self.saved.add_command(command=lambda: self.save_csv(True))
         self.saved.add_command(command=lambda: self.save_csv(False))
 
+        # sub sub menu for saving
+
         saved_rece = tk.Menu(self.menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white") # cascade sub sub menu
         saved_send = tk.Menu(self.menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white")
 
+        # sub sub menu for removing
+
+        remov_rece = tk.Menu(self.menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white") 
+        remov_send = tk.Menu(self.menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white")
+
         # adding the cascade menu for senders/receivers
 
-        try:
-            f = open('receivers.csv', 'r') # file with saved receivers
-            csvreader = list(reader(f))
+        #try:
+        f = open('receivers.csv', 'r') # file with saved receivers
+        csvreader = list(reader(f))
+        for i in csvreader:
+            saved_rece.add_command(label = i[0], command=lambda i=i: self.fill(i, True))
+            remov_rece.add_command(label = i[0], command=lambda i=i: self.remove_saved(i,True))
+        
+        # first receiver on startup
 
-            for i in csvreader:
-                saved_rece.add_command(label = i[0], command=lambda i=i: self.fill(i, True))
-            
-            # first receiver on startup flag
+        receiver_present = list(csvreader[0])
 
-            receiver_present = csvreader[0]
+        f.close()
 
-            f.close()
-
-        except FileNotFoundError: 
-            receiver_present = ''
+        #except (FileNotFoundError, IndexError): # exception when there is no file or the file is empty
+            #receiver_present = ''
 
         try:
 
@@ -136,14 +146,15 @@ class App:
 
             for i in csvreader:
                 saved_send.add_command(label = i[0], command=lambda i=i: self.fill(i, False))
+                remov_send.add_command(label = i[0], command=lambda i=i: self.remove_saved(i, False))
 
-            # first sender on startup flag
+            # first sender on startup 
 
             sender_present = csvreader[0]
             
             f.close()
                 
-        except FileNotFoundError:
+        except (FileNotFoundError, IndexError): 
             sender_present = ''
 
         self.menubar.add_cascade(menu=self.filemenu)
@@ -151,6 +162,8 @@ class App:
 
         self.saved.add_cascade(menu=saved_rece)
         self.saved.add_cascade(menu=saved_send)
+        self.saved.add_cascade(menu=remov_rece)
+        self.saved.add_cascade(menu=remov_send)
         
         self.root.config(menu=self.menubar)        
         
@@ -181,7 +194,7 @@ class App:
                 j += 1
 
 
-        self.l.grid(columnspan = 2, pady = 10)
+        self.currency_label.grid(columnspan = 2, pady = 10)
         
         self.combo.grid(columnspan = 2)
 
@@ -246,10 +259,10 @@ class App:
         if self.language_tracker:
             self.titles = ["Nazwa odbiorcy","Nazwa odbiorcy cd.","Nr rachunku odbiorcy","Kwota","Nr rachunku zleceniodawcy","Nazwa zleceniodawcy","Nazwa zleceniodawcy cd.","Tytuł"]
             self.additional_titles = ["Pieczęć, data i podpis zleceniodawcy", "Pieczęć", "Opłata", "Odcinek dla banku zleceniodawcy", "Odcinek dla zleceniodawcy", "W", "P"]
-            self.root.title("Kreator poleceń przelewu 1.0")
+            self.root.title("Kreator poleceń przelewu 1.1")
             self.title_label.configure(text = "Kreator polecenia przelewu\n")
             self.run_button.config(text='Wykonaj')
-            self.l.config(text='Waluta')
+            self.currency_label.config(text='Waluta')
 
             self.menubar.entryconfig(1, label = "Opcje")
             self.menubar.entryconfig(2, label = "Zapisani")
@@ -258,9 +271,9 @@ class App:
             self.filemenu.entryconfig(1, label = "Tryb ciemny")
             self.filemenu.entryconfig(2, label = "Wyjście")
 
-            save_names = ["Zapisz bieżącego odbiorcę", "Zapisz bieżącego nadawcę", "Odbiorcy", "Nadawcy"]
+            save_names = ["Zapisz bieżącego odbiorcę", "Zapisz bieżącego zleceniodawcę", "Odbiorcy", "Zleceniodawcy", "Usuń zapisanego odbiorcę", "Usuń zapisanego zleceniodawcę"]
 
-            for i in range(4):
+            for i in range(6):
                 self.saved.entryconfig(i, label = save_names[i])
 
             self.temp_lang = 1
@@ -270,10 +283,10 @@ class App:
         else:
             self.titles = ["Receiver name", "Receiver name cont.", "Receiver account number", "Value","Sender account number", "Sender name", "Sender name cont.", "Title"]
             self.additional_titles = ["Stamp, date and signature of the sender", "Stamp", "Fee", "Voucher for the sender's bank", "Voucher for the sender", "D", "T"]
-            self.root.title("Transfer order creator 1.0")
+            self.root.title("Transfer order creator 1.1")
             self.title_label.configure(text = "Transfer order creator\n")
             self.run_button.config(text='Run')
-            self.l.config(text='Currency')
+            self.currency_label.config(text='Currency')
 
             self.menubar.entryconfig(1, label = "Options")
             self.menubar.entryconfig(2, label = "Saved")
@@ -282,7 +295,7 @@ class App:
             self.filemenu.entryconfig(1, label = "Dark mode")
             self.filemenu.entryconfig(2, label = "Exit")
             
-            save_names = ["Save current receiver", "Save current sender", "Receivers", "Senders"]
+            save_names = ["Save current receiver", "Save current sender", "Receivers", "Senders", "Remove saved receiver", "Remove saved sender"]
 
             for i in range(4):
                 self.saved.entryconfig(i, label = save_names[i])
@@ -305,7 +318,7 @@ class App:
             self.root.configure(bg = '#212121' )
             for i in self.labels: # renaming labels
                 i.configure(bg = '#212121', fg='#dddddd')
-            self.l.config(bg = '#212121', fg='#dddddd')
+            self.currency_label.config(bg = '#212121', fg='#dddddd')
             for i in self.entries:
                 i.configure(bg = '#3d3d3d', fg='#dddddd', highlightcolor = "#dddddd", highlightbackground="#000000")
             self.title_label.configure(bg = '#212121', fg='#dddddd')
@@ -317,7 +330,7 @@ class App:
             self.root.configure(bg = '#d198b7' )
             for i in self.labels: # renaming labels
                 i.configure(bg = '#d198b7', fg='#000000')
-            self.l.config(bg = '#d198b7', fg='#000000')
+            self.currency_label.config(bg = '#d198b7', fg='#000000')
             for i in self.entries:
                 i.configure(bg = '#dddddd', fg='#000000', highlightcolor = "black", highlightbackground="#d198b7")
             self.title_label.configure(bg = '#d198b7', fg='#000000')
@@ -358,10 +371,10 @@ class App:
 
         if self.language_tracker:
             top.title('Saving')
-            temp_label = tk.Label(top, text = f"Enter {name}'s identification code\n This code will allow you to distinguish saved positions in the menu \n Restart the program in order to view changes", padx = 10, pady = 20)
+            temp_label = tk.Label(top, text = f"Enter {name}'s identification code\n This code will allow you to distinguish saved positions in the menu \n Restart the program in order to view changes", pady = 5)
         else:
             top.title('Zapisywanie') 
-            temp_label = tk.Label(top, text = f"Wpisz kod identyfikacyjny {name}\n Ten kod pozwoli ci rozróżnić zapisane pozycje w menu \n Zrestartuj program, aby zobaczyć zmiany", padx = 10, pady = 20)
+            temp_label = tk.Label(top, text = f"Wpisz kod identyfikacyjny {name}\n Ten kod pozwoli ci rozróżnić zapisane pozycje w menu \n Zrestartuj program, aby zobaczyć zmiany", pady = 5)
         
         e = tk.Entry(top)
 
@@ -369,11 +382,12 @@ class App:
 
         if self.dark_mode_flag:
             top.configure(bg='#d198b7')
-            temp_label.config(bg='#d198b7')
+            temp_label.config(bg = '#d198b7', fg='#000000')
+            e.config(bg = '#dddddd', fg='#000000', highlightcolor = "black", highlightbackground="#d198b7", relief = 'flat')
         else:
             top.configure(bg = '#212121')
             temp_label.config(bg = '#212121', fg='#dddddd')
-            e.config(bg = '#3d3d3d', fg='#dddddd')
+            e.config(bg = '#3d3d3d', fg='#dddddd', highlightcolor = "#dddddd", highlightbackground="#000000", relief = 'flat')
 
         # packing the widgets in the pop-up
 
@@ -382,6 +396,7 @@ class App:
 
         tk.Button(
         top, 
+        pady = 5,
         text="Save", 
         font=(self.font,16), 
         width=10, 
@@ -415,8 +430,6 @@ class App:
             for i in index:
                 a += f",{self.entries[i].get()}"
 
-            print(filename)
-
             with open(filename, 'a') as f:
                 f.write(a+"\n")
 
@@ -436,6 +449,24 @@ class App:
             for i in range(3):
                 self.entries[i+4].delete(0,'end')
                 self.entries[i+4].insert(0,line[i+1])
+
+    def remove_saved(self, line, test):
+
+        if test:
+            filename = 'receivers.csv'
+        else:
+            filename = 'senders.csv'
+
+        with open(filename, 'r') as f:
+            lines = list(reader(f))
+
+
+        with open(filename, 'w') as f:
+            for i in lines:
+                print(i)
+                if i != line:
+                    f.write(i)
+
 
     # pop-up error method
 
@@ -459,6 +490,8 @@ class App:
     # saving configuration (dark mode and language)
 
     def save_config(self):
+
+        print(a)
 
         with open('config.txt', 'w') as f:
             f.write(str(self.temp_lang) + '\n' + str(self.temp_dark))
