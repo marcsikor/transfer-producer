@@ -12,4 +12,14 @@ It supports dark mode and saving receivers/senders data on your drive (in csv fo
 
 ![Second picture](/readme-assets/thir-pic.png?raw=true "Third picture")
 
-Please note that the transfer.tex file has to be in the same directory for the program to work correctly.
+Please note that the transfer.tex file has to be in the same directory as trasfers.py for the program to work correctly.
+
+To run the program clone the repository, move into the repository, and run the python script.
+
+```shell
+git clone https://github.com/marcsikor/transfer-producer
+cd transfer-producer
+python3 transfers.py
+```
+
+If any trouble with pdflatex occurs on your local machine, you can still use the generated newtransfer.tex file - for example with [Overleaf](https://www.overleaf.com)

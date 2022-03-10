@@ -300,7 +300,7 @@ class App:
             
             save_names = ["Save current receiver", "Save current sender", "Receivers", "Senders", "Remove saved receiver", "Remove saved sender"]
 
-            for i in range(4):
+            for i in range(6):
                 self.saved.entryconfig(i, label = save_names[i])
 
             self.temp_lang = 0
@@ -374,10 +374,10 @@ class App:
 
         if self.language_tracker:
             top.title('Saving')
-            temp_label = tk.Label(top, text = f"Enter {name}'s identification code\n This code will allow you to distinguish saved positions in the menu \n Restart the program in order to view changes", pady = 5)
+            temp_label = tk.Label(top, text = f"Enter {name}'s identification code.\n This code will allow you to distinguish saved positions in the menu. \n Restart the program in order to view changes.", pady = 5)
         else:
             top.title('Zapisywanie') 
-            temp_label = tk.Label(top, text = f"Wpisz kod identyfikacyjny {name}\n Ten kod pozwoli ci rozróżnić zapisane pozycje w menu \n Zrestartuj program, aby zobaczyć zmiany", pady = 5)
+            temp_label = tk.Label(top, text = f"Wpisz kod identyfikacyjny {name}.\n Ten kod pozwoli ci rozróżnić zapisane pozycje w menu. \n Zrestartuj program, aby zobaczyć zmiany.", pady = 5)
         
         e = tk.Entry(top)
 
@@ -420,9 +420,9 @@ class App:
             # error pop-up
 
             if self.language_tracker:
-                self.error(f"Enter {name}'s identification code")
+                self.error(f"Enter {name}'s identification code.")
             else:
-                self.error(f"Wpisz kod identyfikacyjny {name}")
+                self.error(f"Wpisz kod identyfikacyjny {name}.")
 
             return 1
 
@@ -457,18 +457,50 @@ class App:
 
         if test:
             filename = 'receivers.csv'
+            
         else:
             filename = 'senders.csv'
 
         with open(filename, 'r') as f:
             lines = list(reader(f))
 
-
         with open(filename, 'w') as f:
             for i in lines:
-                print(i)
                 if i != line:
                     f.write(i)
+
+        # pop-up window
+
+        top = tk.Toplevel(self.root) # top 
+ 
+        # instructing the user that the changes will be visible after a restart
+
+        if self.language_tracker:
+            if test:
+                name = "receiver"
+            else:
+                name = "sender"
+            top.title('Deleting')
+            temp_label = tk.Label(top, text = f"The {name} has been removed. \n Restart the program in order to view changes.", pady = 5)
+        else:
+            if test:
+                name = "Odbiorca"
+            else:
+                name = "Zleceniodawca"
+            top.title('Usuwanie') 
+            temp_label = tk.Label(top, text = f"{name} został usunięty. \n Zrestartuj program aby zobaczyć zmiany.", pady = 5)
+
+        temp_label.pack()
+
+        # dark mode provision
+
+        if self.dark_mode_flag:
+            top.configure(bg='#d198b7')
+            temp_label.config(bg = '#d198b7', fg='#000000')
+        else:
+            top.configure(bg = '#212121')
+            temp_label.config(bg = '#212121', fg='#dddddd')
+            
 
 
     # pop-up error method
