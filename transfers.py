@@ -221,7 +221,7 @@ class App:
             a = g.read()
 
         for i in range(8):
-            a = a.replace('placeholder'+str(i), self.entries[i].get()) # creating new tex code while editing the template on "placeholder*" flag
+            a = a.replace('placeholder'+str(i), self.entries[i].get().upper()) # creating new tex code while editing the template on "placeholder*" flag
             a = a.replace('new*placeh'+str(i), self.titles[i]) # renaming the boxes names with "new*placeh" flag
         
         for i in range(7):
