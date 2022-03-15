@@ -126,7 +126,7 @@ class App:
         try:
 
             f = open('receivers.csv', 'r') # file with saved receivers
-            csvreader = list(reader(f))
+            csvreader = list(reader(f, delimiter='|'))
             for i in csvreader:
                 saved_rece.add_command(label = i[0], command=lambda i=i: self.fill(i, True))
                 remov_rece.add_command(label = i[0], command=lambda i=i: self.remove_saved(i,True))
@@ -144,7 +144,7 @@ class App:
         try:
 
             f = open('senders.csv', 'r') # file with saved senders
-            csvreader = list(reader(f))
+            csvreader = list(reader(f, delimiter='|'))
 
             for i in csvreader:
                 saved_send.add_command(label = i[0], command=lambda i=i: self.fill(i, False))
@@ -431,7 +431,7 @@ class App:
             a = value.upper()
 
             for i in index:
-                a += f",{self.entries[i].get()}"
+                a += f"|{self.entries[i].get()}"
 
             with open(filename, 'a') as f:
                 f.write(a+"\n")
@@ -462,7 +462,7 @@ class App:
             filename = 'senders.csv'
 
         with open(filename, 'r') as f:
-            lines = list(reader(f))
+            lines = list(reader(f, delimiter='|'))
 
         with open(filename, 'w') as f:
             for i in lines:
