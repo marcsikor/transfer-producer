@@ -29,7 +29,7 @@ class App:
         else:
             self.sysinfo = False
 
-        # setting up the font
+        # setting up the font based on the system
 
         if self.sysinfo:
             self.font = 'Ubuntu'
@@ -50,7 +50,7 @@ class App:
             self.language_tracker = True
             self.dark_mode_flag = True
 
-        # top label definition  
+        # top label definition
 
         self.title_label = tk.Label(self.root, font=(self.font,18,'bold'), text="Transfer order creator\n")
 
@@ -58,7 +58,7 @@ class App:
 
         self.currency_label= tk.Label(self.root, font=(self.font,16), text="Currency") #label for currency defined here to avoid collision with initial widget positioning
 
-            # styling (ttk is a pain)
+        # styling (ttk is a pain)
 
         ttk.Style().configure('TCombobox', fieldbackground = "#86C5DA", background = '#86C5DA', selectbackground = '#779ecb', selectforeground = "white", relief='flat', borderwidth = "0")
         ttk.Style().map('TCombobox',
@@ -71,7 +71,7 @@ class App:
         self.root.option_add('*TCombobox*Listbox*selectBackground', '#779ecb')
         self.root.option_add('*TCombobox*Listbox*selectForeground', 'white')
 
-            # finally dropdown menu
+        # finally dropdown menu
 
         self.combo = ttk.Combobox(self.root)
         self.combo["values"] = ['PLN','USD','GBP']
@@ -90,19 +90,19 @@ class App:
         activebackground="#779ecb",
         activeforeground="white", 
         relief='flat'
-        ) # run button
+        )
 
         # dropdown top bar menus
 
         self.menubar = tk.Menu(root, bg = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white")
-
         self.filemenu = tk.Menu(self.menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white" ) # submenus
         self.saved = tk.Menu(self.menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white" )
-
-        self.menubar.config(font = self.font)
         
+        self.menubar.config(font = self.font)
         self.filemenu.config(font = self.font)
         self.saved.config(font = self.font)
+
+        # submenus
 
         self.filemenu.add_command(command=self.change_language)
         self.filemenu.add_command(command=self.dark_mode)
@@ -111,21 +111,24 @@ class App:
         self.saved.add_command(command=lambda: self.save_csv(True))
         self.saved.add_command(command=lambda: self.save_csv(False))
 
-        # sub sub menu for saving
+        # subsubmenu for saving
 
         saved_rece = tk.Menu(self.menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white") # cascade sub sub menu
         saved_send = tk.Menu(self.menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white")
 
-        # sub sub menu for removing
+        # subsubmenu for removing
 
         remov_rece = tk.Menu(self.menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white") 
         remov_send = tk.Menu(self.menubar, tearoff = 0, background = '#86C5DA', relief = 'flat', activebackground='#779ecb', activeforeground = "white")
 
         # adding the cascade menu for senders/receivers
+        # try block in case the files are not present
 
         try:
+            
+            # file with saved receivers
 
-            f = open('receivers.csv', 'r') # file with saved receivers
+            f = open('receivers.csv', 'r') 
             csvreader = list(reader(f, delimiter='|'))
             for i in csvreader:
                 saved_rece.add_command(label = i[0], command=lambda i=i: self.fill(i, True))
@@ -143,7 +146,9 @@ class App:
 
         try:
 
-            f = open('senders.csv', 'r') # file with saved senders
+            # file with saved senders
+
+            f = open('senders.csv', 'r') 
             csvreader = list(reader(f, delimiter='|'))
 
             for i in csvreader:
@@ -160,6 +165,8 @@ class App:
             
             sender_present = ''
 
+        # placing the submenus in the proper 
+        
         self.menubar.add_cascade(menu=self.filemenu)
         self.menubar.add_cascade(menu=self.saved)
 
@@ -170,13 +177,18 @@ class App:
         
         self.root.config(menu=self.menubar)        
         
-        self.change_language() # adding text to everything
+        # adding text to everything with change_language method
+        
+        self.change_language() 
 
         # placing all widgets
-        
-        self.title_label.grid(columnspan = 2) # .grid() method used for displaying UI elements
+        # .grid() method used for displaying UI elements
 
-        for i in self.titles: # setting up the labels and entry bars 
+        self.title_label.grid(columnspan = 2) 
+        
+        # setting up the labels and entry bars 
+        
+        for i in self.titles: 
             
             l = tk.Label(root, font=(self.font,16), text=i)
             self.labels.append(l)
@@ -185,16 +197,15 @@ class App:
             self.entries.append(e)
 
         j = 0
+        k = 0
         for a in range(2):
-            for i in range(1,9,2):
-                self.labels[j].grid(column = a, row = i)
-                j += 1
-
-        j = 0
-        for a in range(2):
-            for i in range(2,10,2):
-                self.entries[j].grid(column = a, row = i, ipadx = 100, padx = 10)
-                j += 1
+            for i in range(1,9):
+                if i % 2 == 1:
+                    self.labels[j].grid(column = a, row = i)
+                    j += 1
+                else:
+                    self.entries[k].grid(column = a, row = i, ipadx = 100, padx = 10)
+                    k += 1
 
 
         self.currency_label.grid(columnspan = 2, pady = 10)
@@ -210,6 +221,7 @@ class App:
         if sender_present != '':
             self.fill(sender_present,False)
 
+        # running dark mode based on initial configuration
 
         self.dark_mode()
 
@@ -307,19 +319,21 @@ class App:
             
             self.language_tracker = True
 
-        a = 0
-        for i in self.labels: # renaming labels
-            i.configure(text=self.titles[a])
-            a += 1
+        # renaming labels
+
+        for i in range(len(self.labels)):
+            self.labels[i].configure(text=self.titles[i])
 
     # dark mode function
 
     def dark_mode(self):
 
+        # changing colors depending on the flag
+
         if self.dark_mode_flag:
           
             self.root.configure(bg = '#212121' )
-            for i in self.labels: # renaming labels
+            for i in self.labels: 
                 i.configure(bg = '#212121', fg='#dddddd')
             self.currency_label.config(bg = '#212121', fg='#dddddd')
             for i in self.entries:
@@ -331,7 +345,7 @@ class App:
         else:
             
             self.root.configure(bg = '#d198b7' )
-            for i in self.labels: # renaming labels
+            for i in self.labels:
                 i.configure(bg = '#d198b7', fg='#000000')
             self.currency_label.config(bg = '#d198b7', fg='#000000')
             for i in self.entries:
@@ -366,9 +380,9 @@ class App:
                 name = 'zleceniobiorcy'
             index = [4,5,6]
 
-        # pop-up window
+        # pop-up window on top
 
-        top = tk.Toplevel(self.root) # top 
+        top = tk.Toplevel(self.root)
  
         # adding identification code which will be viewed in the menu
 
@@ -403,7 +417,7 @@ class App:
         text="Save", 
         font=(self.font,16), 
         width=10, 
-        command=lambda: self.sub_save(e.get(), index, name, top, filename), 
+        command=lambda: self.sub_save(e.get(), index, name, top, filename),
         bg = '#86C5DA',
         highlightcolor="#779ecb", 
         activebackground="#779ecb",
@@ -448,22 +462,18 @@ class App:
                 self.entries[i].insert(0,line[i+1])
 
         else:
-
             for i in range(3):
                 self.entries[i+4].delete(0,'end')
                 self.entries[i+4].insert(0,line[i+1])
-
+                
     def remove_saved(self, line, test):
 
         if test:
             filename = 'receivers.csv'
-            
         else:
             filename = 'senders.csv'
-
         with open(filename, 'r') as f:
             lines = list(reader(f, delimiter='|'))
-
         with open(filename, 'w') as f:
             for i in lines:
                 if i != line:
@@ -500,8 +510,6 @@ class App:
         else:
             top.configure(bg = '#212121')
             temp_label.config(bg = '#212121', fg='#dddddd')
-            
-
 
     # pop-up error method
 
@@ -512,7 +520,6 @@ class App:
             top.title('Error')
         else:
             top.title('Błąd')
-
         temp_label = tk.Label(top, text = text, padx = 10, pady = 20)
         if self.dark_mode_flag:
             top.configure(bg='#d198b7')
@@ -528,7 +535,6 @@ class App:
 
         with open('config.txt', 'w') as f:
             f.write(str(self.temp_lang) + '\n' + str(self.temp_dark))
-
 
 root = tk.Tk()
 app = App(root, platform)
