@@ -477,7 +477,7 @@ class App:
         with open(filename, 'w') as f:
             for i in lines:
                 if i != line:
-                    f.write(i)
+                    f.write("|".join(i))
 
         # pop-up window
 
